@@ -14,6 +14,7 @@ from config import (
     DEFAULT_STRUCTURED_OUTPUT
 )
 
+from assessment_engine import run_assessment
 
 def main():
     try:
@@ -47,6 +48,9 @@ def handle_single_image(ocr_engine):
         if not filename:
             filename = DEFAULT_OUTPUT_FILE
         save_text_to_file(text, filename)
+
+        print_subheader("ASSESSMENT RESULTS")
+        run_assessment(text)
     
     except Exception as e:
         print(f"Error: {e}")
