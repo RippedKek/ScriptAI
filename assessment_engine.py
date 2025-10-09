@@ -1,6 +1,6 @@
 # assessment_engine.py
 from rich.console import Console
-from assessment_core import evaluate_text  # optional split if you have it in a separate file
+from assessment_core_v2 import evaluate_text  # optional split if you have it in a separate file
 
 console = Console()
 
