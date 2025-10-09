@@ -101,6 +101,7 @@ class OCREngine:
             clean_up_tokenization_spaces=False
         )
         
+        print(output_text)
         return output_text[0]
     
     def extract_student_info(self, image_path):

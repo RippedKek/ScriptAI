@@ -8,8 +8,8 @@ MAX_TOKENS_STUDENT_INFO = 256
 MAX_TOKENS_STRUCTURED = 2048
 
 # Prompts
-PROMPT_EXTRACT_ALL = """Extract all the handwritten text from this image. 
-Include everything you can read, preserving the structure and order."""
+PROMPT_EXTRACT_ALL = """Extract all the handwritten text from this image.
+Include everything you can read, preserving the structure and order including "End of answer" markers."""
 
 PROMPT_STUDENT_INFO = """Look at the top of this answer sheet and extract the student's name and ID/roll number.
 Format your response as:
@@ -17,7 +17,7 @@ Name: [student name]
 ID: [student id]"""
 
 PROMPT_STRUCTURED = """Extract all text from this answer sheet including:
-- Question numbers and delimiters (like "ANS TO QUE NO 1(a)", "END OF 1(a)")
+- Question numbers and delimiters (like "ANS TO QUESTION NO-1(a)", "END OF ANSWER")
 - All handwritten answers
 - Preserve the exact structure and order
 

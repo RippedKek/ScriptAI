@@ -25,13 +25,13 @@ def main():
     
     # Initialize engines
     ocr_engine = OCREngine(model, processor, device)
-    batch_processor = BatchProcessor(ocr_engine)
+    #batch_processor = BatchProcessor(ocr_engine)
     
     handle_single_image(ocr_engine)
 
 
 def handle_single_image(ocr_engine):
-    img_path = 'samples\\note.jpeg'
+    img_path = 'samples\ip3.png'
     
     if not validate_image_path(img_path):
         print("Invalid or non-existent image file")
