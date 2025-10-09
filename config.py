@@ -8,19 +8,29 @@ MAX_TOKENS_STUDENT_INFO = 256
 MAX_TOKENS_STRUCTURED = 2048
 
 # Prompts
-PROMPT_EXTRACT_ALL = """Extract all the handwritten text from this image.
-Include everything you can read, preserving the structure and order including "End of answer" markers."""
+PROMPT_EXTRACT_ALL = """Extract all handwritten text from this image.
+Preserve the exact structure and order, including question delimiters.
+If visible, always include markers in this exact form:
+"Answer to the question no-<id>" and "End of Answer-<id>" where <id> is like 1a, 1b, 2c, etc.
+Do not invent markers if they are not present."""
 
-PROMPT_STUDENT_INFO = """Look at the top of this answer sheet and extract the student's name and ID/roll number.
-Format your response as:
+PROMPT_STUDENT_INFO = """Extract student's informations and format it like:
 Name: [student name]
-ID: [student id]"""
+ID: [student id]
+Course: [course name]
+Course Code: [course code]
+Session: [academic session]
+Semester: [semester number only i.e., 1, 2, 3, etc.]
+Exam: [exam name]
+Date: [exam date in format dd-mm-yyyy]
+Section: [section]
+Department: [department name abbreviation]
+Institution: [institution name]"""
 
 PROMPT_STRUCTURED = """Extract all text from this answer sheet including:
-- Question numbers and delimiters (like "ANS TO QUESTION NO-1(a)", "END OF ANSWER")
+- Question numbers and delimiters (like "Answer to the question no-1a" and "End of Answer-1a")
 - All handwritten answers
 - Preserve the exact structure and order
-
 Be thorough and extract everything readable."""
 
 # File settings

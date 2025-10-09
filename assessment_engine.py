@@ -8,10 +8,14 @@ def run_assessment(extracted_text: str):
     """
     Runs the auto-assessment pipeline on extracted OCR text.
     The text should include:
-        'Answer to the question no-1a' ... 'End of answer'
+        'Answer to the question no-1a' ... 'End of Answer-1a'
+    Returns:
+        dict of per-question marks.
     """
     try:
         console.print("[bold cyan]Running answer assessment on OCR text...[/bold cyan]")
-        evaluate_text(extracted_text)  # call your scoring logic
+        marks = evaluate_text(extracted_text)  # returns dict
+        return marks
     except Exception as e:
         console.print(f"[red]Assessment failed: {e}[/red]")
+        return {}

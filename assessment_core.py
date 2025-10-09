@@ -8,18 +8,12 @@ from rich.table import Table
 
 console = Console()
 
-# ------------------------------------------------------------
-# 1️⃣ Model Setup
-# ------------------------------------------------------------
 console.print("[bold cyan]Loading assessment models...[/bold cyan]")
 model = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 nlp = spacy.load("en_core_web_sm")
-console.print("[green]✅ Assessment models loaded successfully.[/green]")
+console.print("[green]Assessment models loaded successfully.[/green]")
 
 
-# ------------------------------------------------------------
-# 2️⃣ Core Scoring Functions
-# ------------------------------------------------------------
 def semantic_similarity(ref, ans):
     """Cosine similarity between semantic embeddings of reference and answer."""
     ref_emb = model.encode(ref, convert_to_tensor=True, show_progress_bar=False)
@@ -52,13 +46,13 @@ def feedback(ref, ans, sem, key):
     missing = ref_tokens - ans_tokens
 
     if sem < 0.5:
-        msg = "❌ Far from reference — needs major conceptual improvement."
+        msg = "Far from reference — needs major conceptual improvement."
     elif key < 0.5:
-        msg = "⚠️ Missing key ideas: " + ", ".join(list(missing)[:5])
+        msg = "Missing key ideas: " + ", ".join(list(missing)[:5])
     elif sem > 0.8 and key > 0.8:
-        msg = "✅ Well written and semantically close to the reference."
+        msg = "Well written and semantically close to the reference."
     else:
-        msg = "👍 Mostly correct; elaborate on details for better clarity."
+        msg = "Mostly correct; elaborate on details for better clarity."
     return msg
 
 
@@ -71,59 +65,74 @@ def final_score(ref, ans):
     return round(score, 2), {"semantic": sem, "keyword": key, "length": length}
 
 
-# ------------------------------------------------------------
-# 3️⃣ Multi-Answer Extractor
-# ------------------------------------------------------------
 def extract_answers(text):
     """
     Extract answers between delimiters:
-        'Answer to the question no-1a' ... 'End of answer'
-    Works with variations like 1a, 1b, 2a, etc.
+        'Answer to the question no-1a' ... 'End of Answer-1a'
+    The end delimiter must match the same <id> as the start.
     """
+    # Accept 'ans' or 'answer', tolerate spaces/dots/hyphens and optional ')'
     pattern = re.compile(
-        r"answer\s*to\s*the\s*question\s*no[\s\-./]*([0-9]+[a-z]?)\)?\s*(.*?)\s*(?=end\s*of\s*answer|$)",
+        r"(?:ans(?:wer)?\s*to\s*the\s*question\s*no)[\s\-./]*"
+        r"([0-9]+[a-z]?)\)?\s*"        # capture qid like 1a / 2c
+        r"(.*?)\s*"
+        r"(?:end\s*of\s*answer)[\s\-./]*\1\b",  # require 'End of Answer-<same id>'
         re.IGNORECASE | re.DOTALL,
     )
 
-    return {m[0].lower(): m[1].strip() for m in pattern.findall(text)}
+    results = {}
+    for m in pattern.finditer(text):
+        qid = m.group(1).lower()
+        ans = m.group(2).strip()
+        results[qid] = ans
+    return results
 
 
-# ------------------------------------------------------------
-# 4️⃣ Hardcoded Reference Answers
-# ------------------------------------------------------------
+# Example reference text with new end delimiters
 REFERENCE_TEXT = """
-Answer to the question no 1a
+Answer to the question no-1a
 IPv4 (Internet Protocol version 4) is a communication protocol used to identify and locate devices on a network and route traffic across the internet. It uses a 32-bit address format (e.g., 192.168.1.1) to uniquely identify each device.
 IPv4 operates on a packet-switched network, where data is divided into packets and sent independently.
 Since it supports about 4.3 billion unique addresses, IPv6 was later introduced to overcome this limitation.
-End of answer
+End of Answer-1a
 
-Answer to the question no 1b
+Answer to the question no-1b
 IPv6 (Internet Protocol version 6) is the latest version of the Internet Protocol designed to replace IPv4.
 It uses a 128-bit address format (e.g., 2001:0db8:85a3::8a2e:0370:7334), allowing for a vastly larger number of unique IP addresses.
 IPv6 provides improved features such as faster routing, built-in security (IPsec), and simplified address configuration.
 It was developed to handle the rapid growth of internet-connected devices and overcome IPv4’s address exhaustion.
-End of answer
+End of Answer-1b
+
+Answer to the question no-2a
+IPv4 (Internet Protocol version 4) is a communication protocol used to identify and locate devices on a network and route traffic across the internet. It uses a 32-bit address format (e.g., 192.168.1.1) to uniquely identify each device.
+IPv4 operates on a packet-switched network, where data is divided into packets and sent independently.
+Since it supports about 4.3 billion unique addresses, IPv6 was later introduced to overcome this limitation.
+End of Answer-2a
+
+Answer to the question no-2b
+IPv6 (Internet Protocol version 6) is the latest version of the Internet Protocol designed to replace IPv4.
+It uses a 128-bit address format (e.g., 2001:0db8:85a3::8a2e:0370:7334), allowing for a vastly larger number of unique IP addresses.
+IPv6 provides improved features such as faster routing, built-in security (IPsec), and simplified address configuration.
+It was developed to handle the rapid growth of internet-connected devices and overcome IPv4’s address exhaustion.
+End of Answer-2b
 """
 
-
-# ------------------------------------------------------------
-# 5️⃣ Evaluation Function (called from main.py)
-# ------------------------------------------------------------
 def evaluate_text(student_text):
     """
     Evaluate OCR-extracted student answers (passed from main.py)
     against hardcoded reference answers.
+    Returns:
+        marks: dict mapping question id (e.g., '1a') -> score (0-100)
     """
     ref_answers = extract_answers(REFERENCE_TEXT)
     stu_answers = extract_answers(student_text)
 
     if not ref_answers:
         console.print("[red]No valid reference answers detected.[/red]")
-        return
+        return {}
     if not stu_answers:
         console.print("[red]No valid student answers detected in OCR text.[/red]")
-        return
+        return {}
 
     console.print(f"[bold yellow]\n=========== MULTI-ANSWER ASSESSMENT ===========[/bold yellow]")
     console.print(f"[cyan]Detected Reference Questions:[/cyan] {list(ref_answers.keys())}")
@@ -139,10 +148,13 @@ def evaluate_text(student_text):
     table.add_column("Grade", justify="center")
     table.add_column("Feedback", width=60)
 
+    marks = {}
+
     for qid, ref_ans in ref_answers.items():
         stu_ans = stu_answers.get(qid, "")
         if not stu_ans:
-            table.add_row(qid.upper(), "-", "-", "-", "-", "N/A", "No answer submitted.")
+            table.add_row(qid.upper(), "0.00", "-", "-", "-", "N/A", "No answer submitted.")
+            marks[qid] = 0.0
             continue
 
         score, metrics = final_score(ref_ans, stu_ans)
@@ -166,18 +178,14 @@ def evaluate_text(student_text):
             grade,
             fb,
         )
+        marks[qid] = round(score, 2)
 
     console.print(table)
-    console.print("[green]\n✅ Assessment Complete.[/green]")
+    console.print("[green]\nAssessment Complete.[/green]")
+    return marks
 
 
-# ------------------------------------------------------------
-# 6️⃣ Local Test Block (Optional)
-# ------------------------------------------------------------
 if __name__ == "__main__":
-    """
-    Optional test: Run this file directly with a sample OCR output in 'student_sample.txt'
-    """
     try:
         with open("student_sample.txt", "r", encoding="utf-8") as s:
             student_text = s.read()
