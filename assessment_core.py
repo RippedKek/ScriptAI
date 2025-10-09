@@ -81,9 +81,10 @@ def extract_answers(text):
     Works with variations like 1a, 1b, 2a, etc.
     """
     pattern = re.compile(
-        r"answer\s*to\s*the\s*question\s*no[-\s]*([0-9]+[a-z]?)\)?\s*(.*?)\s*(?=end\s*of\s*answer|$)",
+        r"answer\s*to\s*the\s*question\s*no[\s\-./]*([0-9]+[a-z]?)\)?\s*(.*?)\s*(?=end\s*of\s*answer|$)",
         re.IGNORECASE | re.DOTALL,
     )
+
     return {m[0].lower(): m[1].strip() for m in pattern.findall(text)}
 
 
@@ -91,24 +92,17 @@ def extract_answers(text):
 # 4️⃣ Hardcoded Reference Answers
 # ------------------------------------------------------------
 REFERENCE_TEXT = """
-Answer to the question no-1a
-Photosynthesis is the process by which green plants convert sunlight, carbon dioxide, and water into glucose and oxygen. It occurs in chloroplasts using chlorophyll pigments that capture solar energy. The process provides the foundation for life on Earth by producing oxygen and organic compounds that sustain most living organisms.
+Answer to the question no 1a
+IPv4 (Internet Protocol version 4) is a communication protocol used to identify and locate devices on a network and route traffic across the internet. It uses a 32-bit address format (e.g., 192.168.1.1) to uniquely identify each device.
+IPv4 operates on a packet-switched network, where data is divided into packets and sent independently.
+Since it supports about 4.3 billion unique addresses, IPv6 was later introduced to overcome this limitation.
 End of answer
 
-Answer to the question no-1b
-Chlorophyll is the green pigment found in chloroplasts that absorbs light energy during photosynthesis. It captures mostly blue and red wavelengths while reflecting green light, giving plants their color. Without chlorophyll, plants could not perform photosynthesis effectively.
-End of answer
-
-Answer to the question no-2a
-Mitosis is a process of cell division where one cell divides to form two genetically identical daughter cells. It is essential for growth, repair, and maintenance in multicellular organisms. The stages of mitosis include prophase, metaphase, anaphase, and telophase.
-End of answer
-
-Answer to the question no-2b
-Respiration is the biochemical process by which cells break down glucose to release energy in the form of ATP. It involves both aerobic and anaerobic pathways, allowing organisms to sustain cellular functions necessary for life.
-End of answer
-
-Answer to the question no-3a
-DNA replication is the process by which a cell copies its DNA before division, ensuring that each daughter cell receives an identical set of genetic information. The process involves enzymes such as helicase, DNA polymerase, and ligase.
+Answer to the question no 1b
+IPv6 (Internet Protocol version 6) is the latest version of the Internet Protocol designed to replace IPv4.
+It uses a 128-bit address format (e.g., 2001:0db8:85a3::8a2e:0370:7334), allowing for a vastly larger number of unique IP addresses.
+IPv6 provides improved features such as faster routing, built-in security (IPsec), and simplified address configuration.
+It was developed to handle the rapid growth of internet-connected devices and overcome IPv4’s address exhaustion.
 End of answer
 """
 
@@ -125,10 +119,10 @@ def evaluate_text(student_text):
     stu_answers = extract_answers(student_text)
 
     if not ref_answers:
-        console.print("[red]❌ No valid reference answers detected.[/red]")
+        console.print("[red]No valid reference answers detected.[/red]")
         return
     if not stu_answers:
-        console.print("[red]❌ No valid student answers detected in OCR text.[/red]")
+        console.print("[red]No valid student answers detected in OCR text.[/red]")
         return
 
     console.print(f"[bold yellow]\n=========== MULTI-ANSWER ASSESSMENT ===========[/bold yellow]")
@@ -148,7 +142,7 @@ def evaluate_text(student_text):
     for qid, ref_ans in ref_answers.items():
         stu_ans = stu_answers.get(qid, "")
         if not stu_ans:
-            table.add_row(qid.upper(), "-", "-", "-", "-", "N/A", "❌ No answer submitted.")
+            table.add_row(qid.upper(), "-", "-", "-", "-", "N/A", "No answer submitted.")
             continue
 
         score, metrics = final_score(ref_ans, stu_ans)
@@ -189,4 +183,4 @@ if __name__ == "__main__":
             student_text = s.read()
         evaluate_text(student_text)
     except FileNotFoundError:
-        console.print("[red]❌ student_sample.txt not found. Provide sample OCR text for testing.[/red]")
+        console.print("[red]student_sample.txt not found. Provide sample OCR text for testing.[/red]")
