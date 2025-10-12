@@ -38,7 +38,7 @@ def handle_zip(ocr_engine: OCREngine, zip_path: str):
     combined_answers = "\n\n".join(
         result["pages_texts"][k] for k in sorted(result["pages_texts"].keys())
     )
-    save_text_to_file(combined_answers, "answers_combined.txt")
+    save_text_to_file(combined_answers, "output/text/answers_combined.txt")
 
     # Run assessment to get per-question marks
     print_subheader("ASSESSMENT RESULTS")

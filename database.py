@@ -2,7 +2,7 @@ import csv
 import re
 import os
 
-def append_ocr_to_csv(ocr_text: str, filename: str = "results/students.csv"):
+def append_ocr_to_csv(ocr_text: str, filename: str = "output/csv/students.csv"):
     """
     Parse OCR text into key-value pairs and append them as a new row to a CSV file.
     """
@@ -28,7 +28,7 @@ def append_ocr_to_csv(ocr_text: str, filename: str = "results/students.csv"):
 
     print(f"Data appended to {filename}")
 
-def append_marks_to_csv(student_id: str, marks: dict, filename: str = "marks.csv"):
+def append_marks_to_csv(student_id: str, marks: dict, filename: str = "output/csv/marks.csv"):
     """
     Append or update per-question marks for a student identified by student_id.
     Ensures each row is uniquely identified by 'Student ID' and expands columns as needed.
