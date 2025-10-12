@@ -4,7 +4,9 @@ Batch processing utilities for multiple images and zip archives
 import os
 import tempfile
 import zipfile
+import cv2
 from pathlib import Path
+from figure_processor import process_figure
 
 class BatchProcessor:
     """Process multiple images in batch"""
@@ -41,7 +43,7 @@ class BatchProcessor:
 
             try:
                 if verbose:
-                    print("🔄 Extracting text...")
+                    print("Extracting text...")
 
                 if mode == "structured":
                     text = self.ocr_engine.extract_with_structure(img_path)
@@ -50,20 +52,20 @@ class BatchProcessor:
                 results[str(img_path)] = text
 
                 if verbose:
-                    print("✅ Success")
+                    print("Success")
                     preview = text[:200] + "..." if len(text) > 200 else text
-                    print(f"\n📝 Preview:\n{preview}\n")
+                    print(f"\nPreview:\n{preview}\n")
 
             except Exception as e:
                 if verbose:
-                    print(f"❌ Error: {e}")
+                    print(f"Error: {e}")
                 results[str(img_path)] = f"Error: {e}"
 
         # Save results to file
         if output_file:
             self._save_results(results, output_file)
             if verbose:
-                print(f"\n💾 All results saved to {output_file}")
+                print(f"\nAll results saved to {output_file}")
 
         return results
 
@@ -99,10 +101,10 @@ class BatchProcessor:
             if any(filename.lower().endswith(ext) for ext in extensions):
                 image_files.append(os.path.join(directory_path, filename))
 
-        print(f"\n📁 Found {len(image_files)} images in {directory_path}")
+        print(f"\nFound {len(image_files)} images in {directory_path}")
 
         if not image_files:
-            print("⚠️  No images found!")
+            print("No images found!")
             return {}
 
         # Sort for stable order
@@ -120,7 +122,7 @@ class BatchProcessor:
             dict(title_text=str, pages_texts=dict[path->text])
         """
         if verbose:
-            print(f"\n📦 Loading zip: {zip_path}")
+            print(f"\nLoading zip: {zip_path}")
         if not os.path.exists(zip_path):
             raise FileNotFoundError(f"Zip not found: {zip_path}")
 
@@ -136,19 +138,31 @@ class BatchProcessor:
 
         # Identify title image (exact file name 'title.*')
         title_candidates = [p for p in all_images if p.stem.lower() == "title"]
+        figure_candidates = [p for p in all_images if p.stem.lower().startswith("figure")]
         if not title_candidates:
             raise RuntimeError("No 'title.*' image found in zip.")
         title_path = sorted(title_candidates)[0]
+        figure_paths = sorted(figure_candidates)
 
         # Other pages
-        other_pages = sorted([p for p in all_images if p != title_path])
+        other_pages = sorted([p for p in all_images if p != title_path and p not in figure_paths])
 
         if verbose:
-            print(f"🧾 Title page: {title_path}")
-            print(f"🖼️  Answer pages: {len(other_pages)}")
+            print(f"Title page: {title_path}")
+            print(f"Figure pages: {len(figure_paths)}")
+            print(f"Answer pages: {len(other_pages)}")
 
         # Extract student info
         title_text = self.ocr_engine.extract_student_info(str(title_path))
+        
+        # Extract all figures (if any)
+        for i, f in enumerate(figure_paths, 1):
+            if verbose:
+                print(f"→ OCR figure page {i}/{len(figure_paths)}: {f}")
+            image = cv2.imread(str(f))
+            output_dir = 'output/figures/layout'
+            os.makedirs(output_dir, exist_ok=True)
+            process_figure(image, os.path.join(output_dir, f.stem))
 
         # Extract all answers
         pages_texts = {}

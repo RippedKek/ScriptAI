@@ -35,8 +35,4 @@ def process_figure(image, output_path):
             figure_path = f"{output_path}_figure_{i+1}.png"
             cv2.imwrite(figure_path, cropped_figure)
             print(f"Saved figure: {figure_path}")
-            
-image_path = 'samples/layout.png'
-image = cv2.imread(image_path)
-process_figure(image, 'D:/deep-learning/output/figures/layout')
     
