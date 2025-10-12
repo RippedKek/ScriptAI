@@ -23,6 +23,7 @@ def process_figure(image, output_path):
     min_area_percentage = 0.1  # Adjust this percentage as needed
     min_area = image_area * min_area_percentage
     
+    figures = []
     # Crop and display each detected figure
     for i, cnt in enumerate(contours):
         x, y, w, h = cv2.boundingRect(cnt)
@@ -33,6 +34,8 @@ def process_figure(image, output_path):
 
             # Save the cropped figure
             figure_path = f"{output_path}_figure_{i+1}.png"
+            figures.append(figure_path)
             cv2.imwrite(figure_path, cropped_figure)
             print(f"Saved figure: {figure_path}")
     
+    return figures

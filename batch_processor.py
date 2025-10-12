@@ -5,6 +5,8 @@ import os
 import tempfile
 import zipfile
 import cv2
+import json
+import re
 from pathlib import Path
 from figure_processor import process_figure
 
@@ -155,6 +157,7 @@ class BatchProcessor:
         # Extract student info
         title_text = self.ocr_engine.extract_student_info(str(title_path))
         
+        figures = []
         # Extract all figures (if any)
         for i, f in enumerate(figure_paths, 1):
             if verbose:
@@ -162,7 +165,42 @@ class BatchProcessor:
             image = cv2.imread(str(f))
             output_dir = 'output/figures/layout'
             os.makedirs(output_dir, exist_ok=True)
-            process_figure(image, os.path.join(output_dir, f.stem))
+            figures.extend(process_figure(image, os.path.join(output_dir, f.stem)))
+        
+        target = ['eye', 'plant cell', 'heart', 'eye']
+        # Assess figures
+        for i, f in enumerate(figures, 1):
+            if verbose:
+                print(f"→ ASSESS figure page {i}/{len(figures)}: {f}")
+            figure_assessment = self.ocr_engine.assess_figure(str(f), target=target[i-1])
+            figures_output_dir = 'output/figures/assessments'
+            os.makedirs(figures_output_dir, exist_ok=True)
+            f_path = Path(f)
+
+            # Parse JSON safely
+            if isinstance(figure_assessment, str):
+                try:
+                    data = json.loads(figure_assessment)
+                except json.JSONDecodeError:
+                    data = {}
+            else:
+                data = figure_assessment
+
+            # Extract only "1a" / "1b" / "1c" etc. from "Figure of 1a"
+            figure_number_value = data.get("figure_number", "")
+            match = re.search(r'Figure of\s*([0-9]+[a-z]?)', figure_number_value, re.IGNORECASE)
+            clean_figure_number = match.group(1) if match else "Unknown"
+
+            # Overwrite the key with the cleaned version
+            data["figure_number"] = clean_figure_number
+
+            if verbose:
+                print(f"→ Cleaned figure number: {clean_figure_number}")
+
+            # Save updated JSON
+            output_path = os.path.join(figures_output_dir, f"{f_path.stem}_assessment.json")
+            with open(output_path, 'w', encoding='utf-8') as af:
+                json.dump(data, af, indent=2, ensure_ascii=False)
 
         # Extract all answers
         pages_texts = {}

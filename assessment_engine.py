@@ -1,6 +1,5 @@
-# assessment_engine.py
 from rich.console import Console
-from assessment_core_v2 import evaluate_text  # optional split if you have it in a separate file
+from assessment_core_v2 import evaluate_text 
 
 console = Console()
 
@@ -14,7 +13,7 @@ def run_assessment(extracted_text: str):
     """
     try:
         console.print("[bold cyan]Running answer assessment on OCR text...[/bold cyan]")
-        marks = evaluate_text(extracted_text)  # returns dict
+        marks = evaluate_text(extracted_text) 
         return marks
     except Exception as e:
         console.print(f"[red]Assessment failed: {e}[/red]")
