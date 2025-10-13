@@ -31,11 +31,10 @@ def load_model(device=None):
         device = check_system()
     
     print("Loading Qwen2-VL-2B-Instruct...")
-    print("First run will download ~5GB model (takes 5-10 minutes)")
     print()
     
     if USE_4BIT_QUANTIZATION and device == "cuda":
-        print("Using 4-bit quantization (saves ~50% VRAM)")
+        print("Using 4-bit quantization")
         try:
             quantization_config = BitsAndBytesConfig(
                 load_in_4bit=True,
