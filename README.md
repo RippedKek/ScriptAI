@@ -87,20 +87,22 @@ The **OCR-Based Student Assessment System** is a complete automated solution for
 ```
 project_root/
 │
-├── assessment_core.py        # NLP-based text scoring and feedback generation
-├── assessment_engine.py      # Assessment orchestration
-├── assessment_initial.py     # Early scoring prototype
-├── batch_processor.py        # ZIP batch processing and figure handling
-├── config.py                 # Model and prompt configuration
-├── cuda.py                   # CUDA device information and diagnostics
-├── database.py               # CSV storage for OCR results and marks
+├── app.py                    # Flask backend (ZIP upload endpoints)
+├── services.py               # Core service functions for Flask & CLI
+├── batch_processor.py        # Multi-student batch and safety-enhanced ZIP handler
+├── ocr_engine.py             # OCR and figure analysis
+├── assessment_core.py        # Text scoring and semantic analysis
 ├── figure_processor.py       # Figure segmentation using OpenCV
-├── main.py                   # Primary entry point for running the system
-├── model_loader.py           # Loads the Qwen2-VL model and processor
-├── ocr_engine.py             # OCR logic using the multimodal model
-├── utils.py                  # Helper functions (I/O and formatting)
+├── model_loader.py           # Model loader with GPU/quantization options
+├── database.py               # CSV appenders for students and marks
+├── main.py                   # CLI entry point for local runs
+├── config.py                 # Model and prompt configuration
+├── utils.py                  # Helpers (saving, formatting, printing)
 ├── requirements.txt          # Dependencies
-└── output/                   # Generated outputs (texts, figures, JSON results)
+└── output/
+    ├── text/<student_id>/answers_combined.txt
+    ├── figures/layout/<student_id>/
+    └── figures/assessments/<student_id>/
 ```
 
 ---
@@ -164,6 +166,43 @@ figure2.png
 | `output/figures/assessments/`      | JSON figure assessment results   |
 | `results/students.csv`             | Student info (Name, ID, etc.)    |
 | `results/marks.csv`                | Marks and grades per student     |
+
+### Multi Students Scripts
+
+Run the pipeline on a ZIP containing subfolders after student IDs which contain the scanned pages:
+
+```bash
+python main.py --multi parent_batch.zip
+```
+
+### Expected ZIP Contents
+
+```
+parent_zip/
+│
+├── std_id_1
+|   ├── title.png
+|   ├── figure_1.png
+|   ├── figure_2.png
+|   ├── text_1.png
+|   ├── etc.
+├── std_id_2
+|   ├── title.png
+|   ├── figure_1.png
+|   ├── figure_2.png
+|   ├── text_1.png
+|   ├── etc.
+```
+
+### Output Files
+
+| File                                    | Description                      |
+| --------------------------------------- | -------------------------------- |
+| `output/text/{id}/answers_combined.txt` | Combined OCR text of all answers |
+| `output/figures/layout/{id}`            | Cropped figure images            |
+| `output/figures/assessments/{id}`       | JSON figure assessment results   |
+| `output/csv/students.csv`               | Student info (Name, ID, etc.)    |
+| `output/csv/marks.csv`                  | Marks and grades per student     |
 
 ---
 
