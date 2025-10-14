@@ -6,7 +6,6 @@ from sentence_transformers import SentenceTransformer, util
 
 load_dotenv() 
 API_KEY = os.getenv("GEMINI_API_KEY")
-#API_KEY = "AIzaSyB6hhZ4BoikMKEFhUtFSVFbyKEEXeSFtbk"
 if not API_KEY:
     raise ValueError(" GEMINI_API_KEY not found in environment variables.")
 
