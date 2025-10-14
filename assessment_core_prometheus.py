@@ -71,9 +71,7 @@ def evaluate_text(student_text, reference_text):
         sources = [hit["source"] for hit in context_hits]
         # Option 1: full source info
         source_pages = "; ".join(sources)
-        # Option 2 (optional): only page numbers 
-        # source_pages = "; ".join([s.split("page")[-1].strip() for s in sources])
-
+        
         #  Grading using Prometheus model
         score, feedback = grade(
             question=f"Question {qid}",

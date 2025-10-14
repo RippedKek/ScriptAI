@@ -9,7 +9,7 @@ from rich.table import Table
 
 console = Console()
 
-console.print("[bold cyan]Loading assessment models (advanced-integrated)...[/bold cyan]")
+console.print("[bold cyan]Loading assessment models[/bold cyan]")
 
 # Sentence embeddings
 try:

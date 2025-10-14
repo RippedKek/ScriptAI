@@ -12,7 +12,7 @@ def run_assessment(extracted_text: str):
       dict of per-question marks {qid: {"score": int, "feedback": str}}
     """
     try:
-        console.print("[bold cyan]Running Prometheus RAG-based assessment...[/bold cyan]")
+        console.print("[bold cyan]Running assessment...[/bold cyan]")
 
         # Load teacher reference from rubric.txt
         with open("rubric.txt", "r", encoding="utf-8") as f:
