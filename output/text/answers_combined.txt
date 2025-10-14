@@ -1,83 +1,72 @@
-Answer to the question no-1a
-IPv4 is the unique address of each device connected to a network. It is a 32-bit address consisting of four parts, each separated by a dot. An example of an IP address might be 192.168.0.1. It has five classes: A, B, C, D and E. It can host 232 different devices.
+Answer to the question no-1a:
+Madelung's deformity is a developmental abnormality of the wrist joint that mainly affects the distal end of the radius bone. It occurs when the growth of the ulnar part of the distal radial physis (the growth plate) is disturbed or prematurely closed, while the remaining part of the bone continues to grow normally. As a result, the distal radius becomes abnormally curved and shortened on its medial side, which causes the wrist and hand to deviate toward the ulna. The deformity is usually more noticeable during adolescence when growth is rapid.
+In this condition, the ulna often becomes prominent and the hand appears to be tilted toward the little finger side. The exact cause can be idiopathic, but it may also be linked with certain genetic and congenital conditions like Turner's syndrome, dyschondrosteosis, or trauma to the growth plate during childhood. Clinically, patients may present with pain at the wrist, restriction of movement (especially pronation and supination), and a visible deformity. X-rays of the wrist show the slanting of the distal radius and an abnormal relationship between the radius and ulna. Treatment is mainly orthopedic and may involve splinting, physiotherapy, or corrective surgery depending on the severity and symptoms.
 End of answer-1a
 
-Answer to the question no-1b
-IPv6 (Internet Protocol version 6) is the latest version of the Internet Protocol designed to replace IPv4.
-It uses a 128-bit address format (e.g., 2001:0db8:85a2:0370:7334), allowing for a vastly larger number of unique IP addresses.
-IPv6 provides improved features such as faster routing, built-in security (IPsec), and simplified address configuration.
-It was developed to handle the rapid growth of internet-connected devices and overcome IPv4's address exhaustion.
+Answer to the question no-1b:
+The carpal bones are the small short bones that form the wrist, arranged in two rows of four bones each. These bones collectively connect the forearm to the hand and allow a wide range of movement at the wrist joint.
+In the proximal row (the row closer to the forearm), from the lateral (thumb) side to the medial (little finger) side, the bones are:
+1. Scaphoid - shaped like a boat and situated below the thumb.
+2. Lunate - crescent-shaped bone that articulates with the radius.
+
+3. Triquetrum – a three-sided bone located next to the lunate.
+4. Pisiform – a small pea-shaped bone lying on the anterior surface of the triquetrum; it is actually a sesamoid bone within the tendon of flexor carpi ulnaris.
+
+In the distal row, from lateral to medial, the bones are:
+
+1. Trapezium – situated below the thumb and articulates with the first metacarpal.
+2. Trapezoid – a small irregular bone articulating with the second metacarpal.
+3. Capitate – the largest carpal bone located at the center of the wrist.
+4. Hamate – has a hook-like projection on its anterior surface, called the hamulus.
+
+A common mnemonic used by students is "Some Lovers Try Positions That They Can't Handle." These bones together form the carpal arch, through which the tendons and median nerve pass (in the carpal tunnel). The carpal bones provide strength, flexibility, and stability to wrist movements.
+
 End of answer-1b
 
-Answer to the question no-1c
-IPv4 headers include fields like Version, HUL, DSCP/ECN, Total Length, Identification, Flags/Fragment Offset, TTL, Protocol, Header Checksum, Source and Destination addresses, and optional Options. Typical minimum header size is 20 bytes, options can extend it in 4-byte increments. TTL prevents looping. Protocol identifies the upper-layer (eg. 6-TCP, 17-UUDP).
-End of answer-1c
+Answer to the question no-2a:
 
-Answer to the question no-2a
-The OSI model has 7 layers. Physical Data Link, Network, Transport, Session, Presentation, Application, and Security. Each layer adds headers and the Security layer encrypts everything below it universally.
+The biceps brachii is a prominent muscle of the anterior compartment of the arm. It has two heads of origin – the long head arises from the supraglenoid tubercle of the scapula and passes through the shoulder joint, while the short head arises from the coracoid process of the scapula. Both heads unite to form a single muscle belly that descends and inserts mainly into the posterior rough part of the radial
+
+tuberosity on the radius bone. A flat fibrous extension called the
+bicipital aponeurosis fans out medially to blend with the deep fascia
+of the forearm, helping to protect the underlying nerves and vessels.
+Actions:
+The biceps brachii is a powerful flexor of the elbow joint and a
+supinator of the forearm when the elbow is flexed. When the forearm
+is in a pronated position (palm facing down), the biceps helps to turn
+the palm upward (supination). It also assists in flexion of the shoulder
+joint, especially by the long head which crosses the shoulder.
+Additionally, it provides some stability to the shoulder joint by
+holding the head of the humerus within the glenoid cavity. In daily
+activities such as lifting, pulling, or carrying objects, the biceps plays
+an important functional role. Its efficiency increases when the elbow
+is partially flexed rather than fully extended.
 End of answer-2a
+Answer to the question no-2b:
+Polydactyly is a congenital malformation in which a person has
+more than the normal five digits on one or both hands or feet. The
+term comes from “poly” meaning many, and “dactyl” meaning
+finger. The extra digit may be small and rudimentary, appearing as
+a soft tissue tag, or it can be well formed with bones, tendons,
+and sometimes even joints and nails.
+This condition occurs due to disturbances during embryonic
+development, specifically during the formation of the limb buds
+around the sixth to eighth week of gestation. It can be inherited as
+a genetic trait, often following an autosomal dominant pattern,
+though sporadic cases also occur. Polydactyly can occur in isolation or
+as part of certain syndromes such as Ellis-van Creveld syndrome or
+trisomy conditions.
 
-Answer to the question no-2b
-TCP is connection-oriented and reliable (3-way handshake, sequencing, ACKs, retransmissions, flow and congestion control). UDP is connectionless
-
-and best-effort with lower overhead and latency, often used for real-time traffic (VoIP, gaming, DNS). TCP ensures ordered delivery. UDP may arrive out of order or be dropped.
+Polydactyly is classified into types based on the location of the extra
+digit:
+• Preaxial polydactyly - extra finger or toe on the thumb or great
+toe side.
+• Postaxial polydactyly - extra finger or toe on the little finger or
+little toe side (most common).
+• Central polydactyly - extra digit between the normal fingers.
+Clinically, the extra digit may interfere with hand function or
+simply cause cosmetic concerns. Treatment is usually surgical
+excision of the extra digit, ideally during early childhood to improve
+both appearance and hand function. Sometimes, if the extra digit is
+functional and well formed, it may be preserved.
 End of answer-2b
-
-Answer to the question no-2c
-A 126 subnet mask has 64 total addresses and 62 usable. Example: 192.168.100.26 ranges from 0 to 63, with 0 network and .63 broadcast. Subnet masks in dotted decimal for 126 is 255.255.255.192. (No calculation shown for other masks.)
-End of answer-2c
-
-Answer to the question no-3a
-ARP maps IP to MAC addresses on a local LAN. A host broadcasts an ARP Request for an IP, the owner replies with its MAC. Entries are cached and time out. Gratuitous ARP can update peers, and ARP poisoning is a known attack vector.
-End of answer-3a
-
-Answer to the question no-3b
-DHCP assigns IP configuration automatically. The server communicates
-over TCP ports 67/68 using a four-step process: Discover, Offer, Request.
-Ack. If it can also hand out DNS servers and default gateway.
-End of answer-3b
-
-Answer to the question no-3c
-DNS translates names to IP addresses. Typical queries go to a resolver,
-which can be recursive and may consult root, TLD, and authoritative servers.
-Most lookups use UDP/53, large zone transfers may use TCP.
-End of answer-3c
-
-Answer to the question no-4a
-WiFi uses CSMA/CD to detect collisions on the air and then backs
-off. Ethernet also uses CSMA/CD but only on hubs, modern switches
-eliminate collisions entirely.
-End of answer-4a
-
-Answer to the question no-4b
-
-The TCP three-way handshake, SYN (client → server) to propose initial sequence number, SYNACK (server → client) acknowledging and proposing its own, then ACK (client → server). After this, data flows with established sequence/ACK numbers.
-End of answer-4b
-
-Answer to the question no-4c
-
-TCP congestion control phases include Slow Start (exponential growth), Congestion Avoidance (additive increase), Fast Retransmit/Fast Recovery on triple-duplicate ACKs, and multiplicative decrease on loss. Algorithms like Reno/CUBIC tune these behaviors.
-End of answer-4c
-
-Answer to the question no-5a
-
-NAT translates private addresses to a public address (or pool), PAT (NAPT) multiplexes many internal flows onto one public IP using distinct port mappings. This conserves IPv4 space but breaks end-to-end reachability unless assisted (e.g., port forwards, UPnP, SSHN).
-
-Answer to the question no-5b
-VANs segment Layer-2 domains logically using 802.1Q tags, improving isolation and broadcast containment. Trunk links carry multiple VANS between switches, access ports carry a single VAN to endpoints. Inter- VAN routing is done by a router or L3 switch.
-End of Answer-5b
-
-Answer to the question no-5c
-CIDR uses masks like 255.255.0.0/24 to summarize multiple networks. For example, 100.0.0/20 groups 16 networks of 128 each.
-End of Answer-5c
-
-Answer to the question no-6a
-HTTPS wraps HTTP in TLS/SA typical TLS 1.3 handshake negotiates ciphers, exchanges ephemeral keys (ECDHE), authenticates the server via its certificate, derives shared secrets, and then encrypts application data with forward secrecy.
-
-End of answer-6a
-Answer to the question no-6b
-802.11ac operates primarily at 2.4 GHz and reaches up to 1 Gbps per stream. 802.11n is only 5 GHz and limited to 150 Mbps total. Channel bonding and MIMO are optional.
-End of answer-6b
-Answer to the question no-6c
-DoS marks packets (eg., DSCP) so queues can prioritize delay-sensitive traffic. Schedulers like strict priority or WFO allocate bandwidth, shaping and policing control rates. (No specific DSCP values provided.)
-End of answer-6c

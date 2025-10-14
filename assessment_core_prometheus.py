@@ -47,7 +47,7 @@ def evaluate_text(student_text, reference_text):
             for qid in ref_answers
         }
 
-    console.print(f"[bold yellow]\n========== PROMETHEUS + RAG ASSESSMENT ==========[/bold yellow]")
+    console.print(f"[bold yellow]\n========== GEMINI ASSESSMENT ==========[/bold yellow]")
     table = Table(show_header=True, header_style="bold magenta")
     table.add_column("Question", style="cyan", width=8)
     table.add_column("Score", justify="center", width=8)
