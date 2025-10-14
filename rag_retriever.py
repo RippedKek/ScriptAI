@@ -42,14 +42,14 @@ def retrieve_context(query: str, top_k: int = TOP_K):
     return results
 
 
-if __name__ == "__main__":
-    print("\n[RAG] Running quick self-test...")
-    test_query = input("Enter a short query (e.g., 'muscle tissue anatomy'): ")
-    hits = retrieve_context(test_query, top_k=5)
+# if __name__ == "__main__":
+#     print("\n[RAG] Running quick self-test...")
+#     test_query = input("Enter a short query (e.g., 'muscle tissue anatomy'): ")
+#     hits = retrieve_context(test_query, top_k=5)
 
-    for h in hits:
-        print(f"\n[{h['rank']}]  Source: {h['source']} (distance={h['distance']:.4f})")
-        print("-" * 90)
-        print(h["text"][:500].replace("\n", " "))
-        print("-" * 90)
-    print(f"\n[RAG] Returned {len(hits)} chunks.")
+#     for h in hits:
+#         print(f"\n[{h['rank']}]  Source: {h['source']} (distance={h['distance']:.4f})")
+#         print("-" * 90)
+#         print(h["text"][:500].replace("\n", " "))
+#         print("-" * 90)
+#     print(f"\n[RAG] Returned {len(hits)} chunks.")

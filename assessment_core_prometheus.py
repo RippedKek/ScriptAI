@@ -78,20 +78,20 @@ def evaluate_text(student_text, reference_text):
     return marks
 
 
-if __name__ == "__main__":
-    console.print("[cyan] Running standalone test for assessment core...[/cyan]")
+# if __name__ == "__main__":
+#     console.print("[cyan] Running standalone test for assessment core...[/cyan]")
 
-    ref = """
-    Answer to the question no-1a
-    Photosynthesis is the process by which green plants convert sunlight, carbon dioxide, and water into glucose and oxygen.
-    End of Answer-1a
-    """
+#     ref = """
+#     Answer to the question no-1a
+#     Photosynthesis is the process by which green plants convert sunlight, carbon dioxide, and water into glucose and oxygen.
+#     End of Answer-1a
+#     """
 
-    student = """
-    Answer to the question no-1a
-    Plants make food from carbon dioxide and water using sunlight.
-    End of Answer-1a
-    """
+#     student = """
+#     Answer to the question no-1a
+#     Plants make food from carbon dioxide and water using sunlight.
+#     End of Answer-1a
+#     """
 
-    results = evaluate_text(student, ref)
-    print(results)
+#     results = evaluate_text(student, ref)
+#     print(results)
