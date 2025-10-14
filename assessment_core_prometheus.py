@@ -2,7 +2,8 @@ import re
 from rich.console import Console
 from rich.table import Table
 from rag_retriever import retrieve_context
-from impression_llm import grade
+from impression_llm import grade #for assessment from prometheus
+#from gemini_assessment import grade #for assessment from gemini
 import spacy
 
 console = Console()
