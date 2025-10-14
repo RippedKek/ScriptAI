@@ -30,7 +30,7 @@ def extract_answers(text):
 def evaluate_text(student_text, reference_text):
     """
     Compare student OCR text against teacher reference answers.
-    Returns dict: {question_id: {"score": int, "feedback": str}}
+    Returns dict: {question_id: {"score": int, "feedback": str, "sources": str}}
     """
 
     ref_answers = extract_answers(reference_text)
@@ -41,28 +41,39 @@ def evaluate_text(student_text, reference_text):
         return {}
     if not stu_answers:
         console.print("[red]No student answers detected.[/red]")
-        return {qid: {"score": 0, "feedback": "No answer submitted."} for qid in ref_answers}
+        return {
+            qid: {"score": 0, "feedback": "No answer submitted.", "sources": ""}
+            for qid in ref_answers
+        }
 
     console.print(f"[bold yellow]\n========== PROMETHEUS + RAG ASSESSMENT ==========[/bold yellow]")
     table = Table(show_header=True, header_style="bold magenta")
     table.add_column("Question", style="cyan", width=8)
     table.add_column("Score", justify="center", width=8)
-    table.add_column("Feedback", width=80)
+    table.add_column("Feedback", width=60)
+    table.add_column("Sources (Pages)", width=40)
 
     marks = {}
 
     for qid, ref in ref_answers.items():
         ans = stu_answers.get(qid, "")
         if not ans:
-            table.add_row(qid.upper(), "0", "No answer submitted.")
-            marks[qid] = {"score": 0, "feedback": "No answer submitted."}
+            table.add_row(qid.upper(), "0", "No answer submitted.", "-")
+            marks[qid] = {"score": 0, "feedback": "No answer submitted.", "sources": ""}
             continue
 
-        # Retrieve textbook context for this answer
+        #  Retrieve textbook context for this answer
         context_hits = retrieve_context(ans, top_k=3)
         context_text = "\n".join([hit["text"] for hit in context_hits])
 
-        # Grade using Prometheus model
+        #  Collect textbook source info (e.g., "anatomy_v2.pdf - page 12")
+        sources = [hit["source"] for hit in context_hits]
+        # Option 1: full source info
+        source_pages = "; ".join(sources)
+        # Option 2 (optional): only page numbers 
+        # source_pages = "; ".join([s.split("page")[-1].strip() for s in sources])
+
+        #  Grading using Prometheus model
         score, feedback = grade(
             question=f"Question {qid}",
             reference=ref,
@@ -70,28 +81,16 @@ def evaluate_text(student_text, reference_text):
             context=context_text
         )
 
-        table.add_row(qid.upper(), str(score), feedback[:80])
-        marks[qid] = {"score": score, "feedback": feedback}
+        # Add to console table
+        table.add_row(qid.upper(), str(score), feedback[:60], source_pages)
+
+        #  Store extended data 
+        marks[qid] = {
+            "score": score,
+            "feedback": feedback,
+            "sources": source_pages
+        }
 
     console.print(table)
     console.print("[green]Assessment complete.[/green]")
     return marks
-
-
-# if __name__ == "__main__":
-#     console.print("[cyan] Running standalone test for assessment core...[/cyan]")
-
-#     ref = """
-#     Answer to the question no-1a
-#     Photosynthesis is the process by which green plants convert sunlight, carbon dioxide, and water into glucose and oxygen.
-#     End of Answer-1a
-#     """
-
-#     student = """
-#     Answer to the question no-1a
-#     Plants make food from carbon dioxide and water using sunlight.
-#     End of Answer-1a
-#     """
-
-#     results = evaluate_text(student, ref)
-#     print(results)
