@@ -19,7 +19,7 @@ META_FILE  = os.path.join(DATA_DIR, "index.pkl")
 CHUNK_SIZE = 800   # characters per chunk
 
 
-EMBED_MODEL = "sentence-transformers/all-MiniLM-L12-v2"
+EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 print(f"[INFO] Loading embedding model: {EMBED_MODEL}")
 embedder = SentenceTransformer(EMBED_MODEL)
 dimension = embedder.get_sentence_embedding_dimension()
