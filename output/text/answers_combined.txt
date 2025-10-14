@@ -1,0 +1,10 @@
+Answer to the question no-1a
+IPv4 is the unique address of each device connected to a network. It is a 32-bit address consisting of four parts, each separated by a dot. An example of an IP address might be 192.168.0.1. It has five classes: A, B, C, D and E. It can host 232 different devices.
+End of answer-1a
+
+Answer to the question no-1b
+IPv6 (Internet Protocol version 6) is the latest version of the Internet Protocol designed to replace IPv4.
+It uses a 128-bit address format (e.g., 2001:0db8:85a2:0370:7334), allowing for a vastly larger number of unique IP addresses.
+IPv6 provides improved features such as faster routing, built-in security (IPsec), and simplified address configuration.
+It was developed to handle the rapid growth of internet-connected devices and overcome IPv4's address exhaustion.
+End of answer-1b

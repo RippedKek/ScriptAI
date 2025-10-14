@@ -4,3 +4,8 @@ env/
 venv/
 *.pyc
 *.pyo
+.env
+books
+data
+outputs
+results

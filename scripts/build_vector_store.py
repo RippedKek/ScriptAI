@@ -10,7 +10,7 @@ from sentence_transformers import SentenceTransformer
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
 
-PDF_PATH = os.path.join(PROJECT_ROOT, "books", "anatomy_v2.pdf")
+PDF_PATH = os.path.join(PROJECT_ROOT, "books", "network.pdf")
 DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 

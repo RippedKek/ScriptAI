@@ -1,15 +1,17 @@
 
 import os, re
 import google.generativeai as genai
+from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer, util
 
-
+load_dotenv() 
 API_KEY = os.getenv("GEMINI_API_KEY")
+#API_KEY = "AIzaSyB6hhZ4BoikMKEFhUtFSVFbyKEEXeSFtbk"
 if not API_KEY:
     raise ValueError(" GEMINI_API_KEY not found in environment variables.")
 
 genai.configure(api_key=API_KEY)
-MODEL_NAME = "gemini-1.5-flash"
+MODEL_NAME = "gemini-2.5-flash-lite"
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 embedder = SentenceTransformer(EMBED_MODEL)
@@ -17,23 +19,27 @@ embedder = SentenceTransformer(EMBED_MODEL)
 
 def build_prompt(question, reference, student_answer, context):
     return f"""
-You are a teacher grading a student's written answer.
+    You are a teacher grading a student's written answer.
 
-Question: {question}
-Reference Answer: {reference}
-Relevant Knowledge: {context}
-Student Answer: {student_answer}
+    Question: {question}
+    Reference Answer: {reference}
+    Relevant Knowledge: {context}
+    Student Answer: {student_answer}
 
-Give a concise evaluation:
-Score: <0–100>
-Feedback: <one short sentence>
-""".strip()
+    Give a concise evaluation in the format:
+    Score: <0–100>
+    Feedback: <one short sentence>
+    """.strip()
 
 
 def grade(question, reference, student_answer, context=""):
     prompt = build_prompt(question, reference, student_answer, context)
 
     model = genai.GenerativeModel(MODEL_NAME)
+    # for m in genai.list_models():
+    #     if "generateContent" in m.supported_generation_methods:
+    #         print(m.name)
+
     response = model.generate_content(prompt)
 
     text = response.text.strip()
