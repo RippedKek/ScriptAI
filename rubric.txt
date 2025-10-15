@@ -1,71 +1,99 @@
-Answer to the question no-1a
-IPv4 (Internet Protocol version 4) is a network-layer protocol used to identify and locate hosts and to route packets across IP networks. It uses 32-bit addresses written in dotted-decimal notation (e.g., 192.168.1.1). IP networks are packet-switched: data is segmented into independent packets that may take different paths. The 32-bit space provides about 4.29 billion unique addresses; scarcity of globally routable IPv4 space helped motivate the adoption of IPv6.
-End of Answer-1a
+Answer to the question no-1a:
+Madelung’s deformity is a congenital or developmental deformity of the wrist that results from premature closure or defective growth of the ulnar (medial) half of the distal radial physis (growth plate). The radial growth becomes asymmetrical—while the lateral part continues to grow, the medial part does not—causing the distal radius to tilt forward and toward the ulna. Consequently, the ulna becomes prominent dorsally, and the hand and carpus deviate toward the ulnar and volar sides.
 
-Answer to the question no-1b
-IPv6 (Internet Protocol version 6) is the successor to IPv4, using 128-bit addresses (e.g., 2001:0db8:85a3::8a2e:0370:7334) to provide a vastly larger address space. It streamlines routing with a simpler base header, supports stateless address autoconfiguration (SLAAC), and mandates IPsec as “implemented” (not necessarily used). Other improvements include efficient extension headers and built-in neighbor discovery to replace ARP.
-End of Answer-1b
+The deformity may be idiopathic or associated with genetic and syndromic conditions such as Turner’s syndrome, Leri-Weill dyschondrosteosis, or multiple hereditary exostosis.
 
-Answer to the question no-1c
-The IPv4 header contains: Version, IHL (header length), DSCP/ECN, Total Length, Identification, Flags, Fragment Offset, TTL, Protocol, Header Checksum, Source Address, Destination Address, and optional Options (with Padding). The minimum header is 20 bytes (IHL=5); options extend it in 4-byte words. TTL prevents routing loops by decrementing per hop; Protocol indicates the upper-layer (e.g., 6=TCP, 17=UDP).
-End of Answer-1c
+Clinical features include:
 
-Answer to the question no-2a
-The OSI model has 7 layers: Physical, Data Link, Network, Transport, Session, Presentation, and Application. Data is encapsulated as it moves down the stack and decapsulated on receipt. Security is provided by protocols across layers (e.g., IPsec at Layer 3, TLS near Layers 5–7) rather than by a separate “security layer.”
-End of Answer-2a
+Wrist deformity with dorsal prominence of the ulnar head.
 
-Answer to the question no-2b
-TCP is connection-oriented and reliable: it uses a three-way handshake, sequence numbers, acknowledgments, retransmissions, flow control, and congestion control to deliver an ordered byte stream. UDP is connectionless and best-effort: it preserves message boundaries, adds minimal overhead, and offers no built-in reliability or ordering—useful for DNS, VoIP, and real-time media where timeliness may be preferred over reliability.
-End of Answer-2b
+Pain and limitation of wrist movement, especially pronation and supination.
 
-Answer to the question no-2c
-A /26 network has 64 total addresses and 62 usable host addresses. Example: 192.168.10.0/26 spans 192.168.10.0–192.168.10.63; the network address is .0, first usable .1, last usable .62, and broadcast .63. The dotted-decimal mask for /26 is 255.255.255.192.
-End of Answer-2c
+Shortened forearm with radial bowing.
 
-Answer to the question no-3a
-ARP resolves IPv4 addresses to MAC addresses on a local network. A host broadcasts an ARP Request asking “Who has IP X?”; the owner replies with its MAC address, and entries are cached for a short time. Gratuitous ARP announces/updates mappings; ARP poisoning is a known attack that forges replies to redirect traffic.
-End of Answer-3a
+Radiographic findings:
 
-Answer to the question no-3b
-DHCP automatically provides IP configuration using UDP (server port 67, client port 68). The DORA process is: Discover (client broadcast), Offer (server), Request (client), Acknowledgment (server). Leases typically include IP address, subnet mask/prefix, default gateway, DNS servers, and lease time; renewals occur before expiry.
-End of Answer-3b
+Increased volar and ulnar tilt of the distal radial articular surface.
 
-Answer to the question no-3c
-DNS maps human-readable names to IP addresses. A resolver (often on the client’s OS or a recursive server) queries authoritative sources, possibly contacting root, TLD, and domain name servers. Most queries use UDP/53; TCP/53 is used for zone transfers and truncated/large responses. Caching with TTLs reduces latency and query load.
-End of Answer-3c
+Triangular configuration of the carpus.
 
-Answer to the question no-4a
-Wi-Fi (802.11) uses CSMA/CA (collision avoidance) with carrier sensing and randomized backoff; it cannot detect collisions while transmitting. Classic shared-medium Ethernet on hubs used CSMA/CD (collision detection), but modern switched full-duplex Ethernet eliminates collisions.
-End of Answer-4a
+Dorsal subluxation of the distal ulna.
 
-Answer to the question no-4b
-The TCP three-way handshake: the client sends SYN with its initial sequence number (ISN); the server replies with SYN-ACK (acknowledging the client’s ISN and providing its own); the client sends ACK acknowledging the server’s ISN. After this, the connection is established and data transfer begins using sequence and acknowledgment numbers.
-End of Answer-4b
+Management:
+Mild cases are treated conservatively with physiotherapy and splinting. Severe or symptomatic cases may require corrective osteotomy of the radius or epiphysiodesis to restore wrist alignment.
+End of answer-1a
 
-Answer to the question no-4c
-TCP congestion control typically follows: Slow Start (cwnd grows exponentially until ssthresh), then Congestion Avoidance (additive increase). On triple-duplicate ACKs, Fast Retransmit triggers, and Fast Recovery adjusts cwnd without dropping to one segment (variant-dependent). On timeout, cwnd is reduced drastically (multiplicative decrease) and Slow Start resumes. Algorithms (e.g., Reno, CUBIC) define exact behaviors.
-End of Answer-4c
+Answer to the question no-1b:
+The carpal bones are eight small bones arranged in two transverse rows, forming the skeleton of the wrist (carpus).
 
-Answer to the question no-5a
-NAT translates private internal addresses to public addresses. Static NAT maps one-to-one; dynamic NAT maps from a pool; PAT (NAPT) multiplexes many internal hosts onto one public IP via distinct port mappings. NAT conserves IPv4 space but breaks some end-to-end assumptions; helpers like port-forwarding, ALG, UPnP, or STUN/TURN are often needed.
-End of Answer-5a
+Proximal row (lateral to medial):
 
-Answer to the question no-5b
-VLANs logically segment Layer-2 broadcast domains using 802.1Q tags. Access ports carry one VLAN to endpoints; trunk ports carry multiple VLANs between switches (and to routers). Inter-VLAN communication requires Layer-3 routing (router-on-a-stick or L3 switch). VLANs improve isolation, security, and broadcast containment.
-End of Answer-5b
+Scaphoid – boat-shaped bone articulating with the radius.
 
-Answer to the question no-5c
-CIDR uses prefix lengths (e.g., /24) instead of fixed classes and supports route aggregation. Example: 10.0.0.0/20 summarizes 10.0.0.0/24 through 10.0.15.0/24 into one aggregate. Prefix length denotes how many high-order bits are network bits; remaining bits are for hosts/subnets.
-End of Answer-5c
+Lunate – moon-shaped bone, also articulates with the radius.
 
-Answer to the question no-6a
-HTTPS is HTTP over TLS. In TLS 1.3, the client and server negotiate parameters, perform an ephemeral key exchange (e.g., ECDHE) for forward secrecy, authenticate the server via its certificate, derive shared keys, and then protect application data with symmetric encryption and integrity. Optional client authentication may also be configured.
-End of Answer-6a
+Triquetrum – pyramidal bone articulating with the articular disc and hamate.
 
-Answer to the question no-6b
-802.11n operates in 2.4 GHz and 5 GHz with up to 40 MHz channels and multiple spatial streams; throughput depends on MCS, channel width, and stream count. 802.11ac operates primarily at 5 GHz, supports wider channels (up to 160 MHz), higher-order modulation, and more streams, providing substantially higher throughput than 802.11n.
-End of Answer-6b
+Pisiform – pea-shaped sesamoid bone within the tendon of flexor carpi ulnaris.
 
-Answer to the question no-6c
-QoS classifies and marks traffic (e.g., DSCP) so devices can queue and schedule it appropriately. Techniques include strict-priority or weighted fair queuing, traffic shaping (smooths bursts) and policing (drops/exceeds rate). Proper QoS reduces latency and jitter for delay-sensitive flows like voice and interactive video.
-End of Answer-6c
+Distal row (lateral to medial):
+
+Trapezium – articulates with the first metacarpal (thumb).
+
+Trapezoid – articulates with the second metacarpal.
+
+Capitate – the largest carpal bone, articulating with the third metacarpal.
+
+Hamate – has a hook-like process (hamulus) on its palmar surface, articulates with the fourth and fifth metacarpals.
+
+Mnemonic: Some Lovers Try Positions That They Can’t Handle.
+
+These bones together form the carpal arch, providing flexibility and strength to the wrist and forming the floor and sides of the carpal tunnel, through which the median nerve and flexor tendons pass.
+End of answer-1b
+
+Answer to the question no-2a:
+The biceps brachii muscle has two heads of origin:
+
+Long head: from the supraglenoid tubercle of the scapula (through the shoulder joint and intertubercular groove).
+
+Short head: from the coracoid process of the scapula.
+
+The fibers unite to form a single belly, which inserts into the posterior rough part of the radial tuberosity and also gives off the bicipital aponeurosis, which blends with the deep fascia of the forearm medially.
+
+Nerve supply: Musculocutaneous nerve (C5, C6).
+
+Actions:
+
+Flexion of the elbow joint – the main flexor of the forearm, especially when the forearm is supinated.
+
+Supination of the forearm – acts as the most powerful supinator when the elbow is flexed.
+
+Flexion of the shoulder joint – assists in forward flexion of the arm.
+
+Stabilization of the shoulder joint – the long head helps keep the head of the humerus in the glenoid cavity.
+
+The biceps is most effective as a supinator when the elbow is at 90° flexion, as seen in activities like turning a doorknob or using a screwdriver.
+End of answer-2a
+
+Answer to the question no-2b:
+Polydactyly is a congenital anomaly characterized by the presence of more than five digits on one or both hands or feet. It results from a disturbance in the patterning of digital rays during limb bud development, usually between the 6th and 8th weeks of intrauterine life.
+
+It may be hereditary (autosomal dominant) or sporadic, and sometimes associated with syndromes such as Ellis–van Creveld syndrome, trisomy 13 (Patau syndrome), or Laurence–Moon–Biedl syndrome.
+
+Types of polydactyly:
+
+Preaxial polydactyly – extra digit on the radial (thumb) or tibial (great toe) side.
+
+Postaxial polydactyly – extra digit on the ulnar (little finger) or fibular (little toe) side (most common type).
+
+Central polydactyly – extra digit between normal digits (least common).
+
+Clinical presentation:
+
+The extra digit may be a small skin tag, partially developed, or a complete finger with bone and joint.
+
+It may cause cosmetic issues or interfere with normal grasping and function.
+
+Management:
+Surgical excision is the treatment of choice, usually performed during infancy or early childhood to achieve better cosmetic and functional outcomes. Reconstruction may be required when the extra digit shares tendons or nerves with the normal finger. Genetic counseling is advised if there is a family history or syndromic association.
+End of answer-2b

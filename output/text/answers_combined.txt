@@ -1,10 +1,72 @@
-Answer to the question no-1a
-IPv4 is the unique address of each device connected to a network. It is a 32-bit address consisting of four parts, each separated by a dot. An example of an IP address might be 192.168.0.1. It has five classes: A, B, C, D and E. It can host 232 different devices.
+Answer to the question no-1a:
+Madelung's deformity is a developmental abnormality of the wrist joint that mainly affects the distal end of the radius bone. It occurs when the growth of the ulnar part of the distal radial physis (the growth plate) is disturbed or prematurely closed, while the remaining part of the bone continues to grow normally. As a result, the distal radius becomes abnormally curved and shortened on its medial side, which causes the wrist and hand to deviate toward the ulna. The deformity is usually more noticeable during adolescence when growth is rapid.
+In this condition, the ulna often becomes prominent and the hand appears to be tilted toward the little finger side. The exact cause can be idiopathic, but it may also be linked with certain genetic and congenital conditions like Turner's syndrome, dyschondrosteosis, or trauma to the growth plate during childhood. Clinically, patients may present with pain at the wrist, restriction of movement (especially pronation and supination), and a visible deformity. X-rays of the wrist show the slanting of the distal radius and an abnormal relationship between the radius and ulna. Treatment is mainly orthopedic and may involve splinting, physiotherapy, or corrective surgery depending on the severity and symptoms.
 End of answer-1a
 
-Answer to the question no-1b
-IPv6 (Internet Protocol version 6) is the latest version of the Internet Protocol designed to replace IPv4.
-It uses a 128-bit address format (e.g., 2001:0db8:85a2:0370:7334), allowing for a vastly larger number of unique IP addresses.
-IPv6 provides improved features such as faster routing, built-in security (IPsec), and simplified address configuration.
-It was developed to handle the rapid growth of internet-connected devices and overcome IPv4's address exhaustion.
+Answer to the question no-1b:
+The carpal bones are the small short bones that form the wrist, arranged in two rows of four bones each. These bones collectively connect the forearm to the hand and allow a wide range of movement at the wrist joint.
+In the proximal row (the row closer to the forearm), from the lateral (thumb) side to the medial (little finger) side, the bones are:
+1. Scaphoid - shaped like a boat and situated below the thumb.
+2. Lunate - crescent-shaped bone that articulates with the radius.
+
+3. Triquetrum – a three-sided bone located next to the lunate.
+4. Pisiform – a small pea-shaped bone lying on the anterior surface of the triquetrum; it is actually a sesamoid bone within the tendon of flexor carpi ulnaris.
+
+In the distal row, from lateral to medial, the bones are:
+
+1. Trapezium – situated below the thumb and articulates with the first metacarpal.
+2. Trapezoid – a small irregular bone articulating with the second metacarpal.
+3. Capitate – the largest carpal bone located at the center of the wrist.
+4. Hamate – has a hook-like projection on its anterior surface, called the hamulus.
+
+A common mnemonic used by students is "Some Lovers Try Positions That They Can't Handle." These bones together form the carpal arch, through which the tendons and median nerve pass (in the carpal tunnel). The carpal bones provide strength, flexibility, and stability to wrist movements.
+
 End of answer-1b
+
+Answer to the question no-2a:
+
+The biceps brachii is a prominent muscle of the anterior compartment of the arm. It has two heads of origin – the long head arises from the supraglenoid tubercle of the scapula and passes through the shoulder joint, while the short head arises from the coracoid process of the scapula. Both heads unite to form a single muscle belly that descends and inserts mainly into the posterior rough part of the radial
+
+tuberosity on the radius bone. A flat fibrous extension called the
+bicipital aponeurosis fans out medially to blend with the deep fascia
+of the forearm, helping to protect the underlying nerves and vessels.
+Actions:
+The biceps brachii is a powerful flexor of the elbow joint and a
+supinator of the forearm when the elbow is flexed. When the forearm
+is in a pronated position (palm facing down), the biceps helps to turn
+the palm upward (supination). It also assists in flexion of the shoulder
+joint, especially by the long head which crosses the shoulder.
+Additionally, it provides some stability to the shoulder joint by
+holding the head of the humerus within the glenoid cavity. In daily
+activities such as lifting, pulling, or carrying objects, the biceps plays
+an important functional role. Its efficiency increases when the elbow
+is partially flexed rather than fully extended.
+End of answer-2a
+Answer to the question no-2b:
+Polydactyly is a congenital malformation in which a person has
+more than the normal five digits on one or both hands or feet. The
+term comes from “poly” meaning many, and “dactyl” meaning
+finger. The extra digit may be small and rudimentary, appearing as
+a soft tissue tag, or it can be well formed with bones, tendons,
+and sometimes even joints and nails.
+This condition occurs due to disturbances during embryonic
+development, specifically during the formation of the limb buds
+around the sixth to eighth week of gestation. It can be inherited as
+a genetic trait, often following an autosomal dominant pattern,
+though sporadic cases also occur. Polydactyly can occur in isolation or
+as part of certain syndromes such as Ellis-van Creveld syndrome or
+trisomy conditions.
+
+Polydactyly is classified into types based on the location of the extra
+digit:
+• Preaxial polydactyly - extra finger or toe on the thumb or great
+toe side.
+• Postaxial polydactyly - extra finger or toe on the little finger or
+little toe side (most common).
+• Central polydactyly - extra digit between the normal fingers.
+Clinically, the extra digit may interfere with hand function or
+simply cause cosmetic concerns. Treatment is usually surgical
+excision of the extra digit, ideally during early childhood to improve
+both appearance and hand function. Sometimes, if the extra digit is
+functional and well formed, it may be preserved.
+End of answer-2b
