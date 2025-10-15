@@ -4,6 +4,7 @@ from model_loader import load_model
 from ocr_engine import OCREngine
 from pathlib import Path
 from batch_processor import BatchProcessor
+from format_answer import format_answer
 from database import append_ocr_to_csv, append_marks_to_csv
 from utils import (
     validate_image_path,
@@ -19,6 +20,7 @@ from config import (
 )
 
 from assessment_engine import run_assessment
+
 
 def parse_student_id(text: str) -> str:
     # Capture alphanumeric student IDs
@@ -47,11 +49,15 @@ def handle_parent_zip(ocr_engine: OCREngine, zip_path: str):
         )
         out_dir = Path("output/text") / folder_name
         out_dir.mkdir(parents=True, exist_ok=True)
-        save_text_to_file(combined_answers, str(out_dir / "answers_combined.txt"))
+        formatted_answers = format_answer(combined_answers)
+        save_text_to_file(formatted_answers, str(out_dir / "answers_combined.txt"))
+        
+        print_subheader(f"FORMATTED ANSWERS")
+        print(formatted_answers)
 
         # 3) Run assessment
         print_subheader(f"[{folder_name}] ASSESSMENT RESULTS")
-        marks = run_assessment(combined_answers) or {}
+        marks = run_assessment(formatted_answers) or {}
 
         # 4) Save marks.csv row using Student ID from title (prefer), else folder name
         sid = parse_student_id(result["title_text"]) or folder_name
@@ -73,11 +79,15 @@ def handle_zip(ocr_engine: OCREngine, zip_path: str):
     combined_answers = "\n\n".join(
         result["pages_texts"][k] for k in sorted(result["pages_texts"].keys())
     )
-    save_text_to_file(combined_answers, "output/text/answers_combined.txt")
+    formatted_answers = format_answer(combined_answers)
+    save_text_to_file(formatted_answers, "output/text/answers_combined.txt")
+    
+    print_subheader(f"FORMATTED ANSWERS")
+    print(formatted_answers)
 
     # Run assessment to get per-question marks
     print_subheader("ASSESSMENT RESULTS")
-    marks = run_assessment(combined_answers) or {}
+    marks = run_assessment(formatted_answers) or {}
 
     sid = parse_student_id(result["title_text"])
     if not sid:

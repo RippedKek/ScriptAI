@@ -9,10 +9,9 @@ MAX_TOKENS_STRUCTURED = 2048
 
 # Prompts
 PROMPT_EXTRACT_ALL = """Extract all handwritten text from this image.
-Preserve the exact structure and order, including question delimiters.
-If visible, always include markers in this exact form:
-"Answer to the question no-<id>" and "End of Answer-<id>" where <id> is like 1a, 1b, 2c, etc.
-Do not invent markers if they are not present."""
+Preserve the exact structure and order and keep everything unchanged.
+Just clone what's written in the copy at 100 percent accuracy. 
+Be thorough and extract everything readable. """
 
 PROMPT_STUDENT_INFO = """Extract student's informations and format it like:
 Name: [student name]

@@ -11,7 +11,7 @@ console = Console()
 nlp = spacy.load("en_core_web_sm")
 
 # Optional toggle to print the full prompt sent to the model
-DEBUG_PROMPT = True
+DEBUG_PROMPT = False
 
 
 def extract_answers(text):
@@ -71,11 +71,11 @@ def evaluate_text(student_text, reference_text):
         context_hits = retrieve_context(ref, top_k=4)
 
         #  DEBUG PRINT — showing retrieved chunks and metadata
-        console.print(f"\n[bold cyan]→ Retrieved Context for Question {qid.upper()}:[/bold cyan]")
-        for i, hit in enumerate(context_hits, start=1):
-            console.print(f"[yellow]Chunk {i}[/yellow]  |  [green]{hit['source']}[/green]")
-            console.print(textwrap.fill(hit["text"].strip(), width=100))
-            console.print("-" * 120)
+        # console.print(f"\n[bold cyan]→ Retrieved Context for Question {qid.upper()}:[/bold cyan]")
+        # for i, hit in enumerate(context_hits, start=1):
+        #     console.print(f"[yellow]Chunk {i}[/yellow]  |  [green]{hit['source']}[/green]")
+        #     console.print(textwrap.fill(hit["text"].strip(), width=100))
+        #     console.print("-" * 120)
 
         # Combining all retrieved textbook text chunks
         context_text = "\n".join([hit["text"] for hit in context_hits])
