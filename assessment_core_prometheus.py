@@ -63,21 +63,17 @@ def evaluate_text(student_text, reference_text):
             marks[qid] = {"score": 0, "feedback": "No answer submitted.", "sources": ""}
             continue
 
-        # 🔹 Hybrid Retrieval: both student + reference answers
-        context_hits_student = retrieve_context(ans, top_k=2)
-        context_hits_ref = retrieve_context(ref, top_k=2)
+        #  Reference-based Retrieval: using only teacher's correct answer
+        context_hits = retrieve_context(ref, top_k=4)
 
-        # Merge results (student + reference contexts)
-        combined_hits = context_hits_student + context_hits_ref
+        # Combining all retrieved textbook text chunks
+        context_text = "\n".join([hit["text"] for hit in context_hits])
 
-        # Combine all retrieved text chunks
-        context_text = "\n".join([hit["text"] for hit in combined_hits])
-
-        # Collect source info (e.g., "book.pdf - page 12")
-        sources = [hit["source"] for hit in combined_hits]
+        # Collecting source info (e.g., "book.pdf - page 12")
+        sources = [hit["source"] for hit in context_hits]
         source_pages = "; ".join(sources)
 
-        # 🔹 Grading using Prometheus/Gemini
+        #  Grading using Prometheus/Gemini
         score, feedback = grade(
             question=f"Question {qid}",
             reference=ref,
