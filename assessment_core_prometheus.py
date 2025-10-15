@@ -2,8 +2,8 @@ import re
 from rich.console import Console
 from rich.table import Table
 from rag_retriever import retrieve_context
-#from impression_llm import grade #for assessment from prometheus
-from gemini_assessment import grade #for assessment from gemini
+# from impression_llm import grade  # for assessment from prometheus
+from gemini_assessment import grade  # for assessment from gemini
 import spacy
 
 console = Console()
@@ -63,18 +63,21 @@ def evaluate_text(student_text, reference_text):
             marks[qid] = {"score": 0, "feedback": "No answer submitted.", "sources": ""}
             continue
 
-        #  Retrieve textbook context for this answer
-        context_hits = retrieve_context(ans, top_k=3)
-        context_text = "\n".join([hit["text"] for hit in context_hits])
+        # 🔹 Hybrid Retrieval: both student + reference answers
+        context_hits_student = retrieve_context(ans, top_k=2)
+        context_hits_ref = retrieve_context(ref, top_k=2)
 
-        #  Collect textbook source info (e.g., "anatomy_v2.pdf - page 12")
-        sources = [hit["source"] for hit in context_hits]
-        # Option 1: full source info
+        # Merge results (student + reference contexts)
+        combined_hits = context_hits_student + context_hits_ref
+
+        # Combine all retrieved text chunks
+        context_text = "\n".join([hit["text"] for hit in combined_hits])
+
+        # Collect source info (e.g., "book.pdf - page 12")
+        sources = [hit["source"] for hit in combined_hits]
         source_pages = "; ".join(sources)
-        # Option 2 (optional): only page numbers 
-        # source_pages = "; ".join([s.split("page")[-1].strip() for s in sources])
 
-        #  Grading using Prometheus model
+        # 🔹 Grading using Prometheus/Gemini
         score, feedback = grade(
             question=f"Question {qid}",
             reference=ref,
@@ -85,7 +88,7 @@ def evaluate_text(student_text, reference_text):
         # Add to console table
         table.add_row(qid.upper(), str(score), feedback[:60], source_pages)
 
-        #  Store extended data 
+        # Store results
         marks[qid] = {
             "score": score,
             "feedback": feedback,
