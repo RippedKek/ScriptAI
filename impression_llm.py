@@ -51,9 +51,9 @@ def grade(question, reference, student_answer, context=""):
                   return_tensors="pt").to(_device)
     output = _model.generate(
         **inputs,
-        max_new_tokens=150,
-        temperature=0.5,
-        top_p=0.9,
+        max_new_tokens=170,
+        temperature=0.2,
+        top_p=0.8,
         do_sample=True,
         pad_token_id=_tok.eos_token_id
     )
