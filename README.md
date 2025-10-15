@@ -4,6 +4,8 @@
 
 The **OCR-Based Student Assessment System** is a complete automated framework for evaluating handwritten exam scripts using **vision-language models (VLMs)** and **NLP-based semantic grading**. It performs OCR, figure analysis, and intelligent grading by comparing responses to reference answers using similarity metrics or API-based assessment. The system is modular, GPU-optimized, and scalable for institutional use.
 
+**Update 15-10-2025: This codebase can now be used as a backend server**
+
 ---
 
 ## Key Features
@@ -60,6 +62,10 @@ The **OCR-Based Student Assessment System** is a complete automated framework fo
   - `results/students.csv`
   - `results/marks.csv`
 
+### 7. Backend Support
+
+- The backend runs on _fastAPI_. The code can be found in `app.py`
+
 ---
 
 ## System Workflow
@@ -79,6 +85,7 @@ The **OCR-Based Student Assessment System** is a complete automated framework fo
 ```
 project_root/
 │
+├── app.py                     # FastAPI server
 ├── batch_processor.py         # Multi-student ZIP handler
 ├── ocr_engine.py              # OCR + figure evaluation
 ├── assessment_core.py         # Local semantic text assessment
@@ -168,6 +175,53 @@ parent_batch/
 | `output/figures/assessments/{id}`       | Figure JSON results        |
 | `results/students.csv`                  | Extracted student metadata |
 | `results/marks.csv`                     | Computed marks per student |
+
+---
+
+## Backend Usage
+
+To run the backend, simply run this in the terminal
+
+```
+uvicorn app:app --host 0.0.0.0 --port 8000
+```
+
+The models should start loading, and once finished, it will display in the terminal. There are three endpoints for the backend
+
+### Health Endpoint
+
+```
+GET/health
+```
+
+**Returns**
+
+```json
+"status": "ok"
+```
+
+### Upload PDF Endpoint
+
+```
+POST/api/v1/upload-pdf
+```
+
+#### Request Body
+
+Send non-flattened PDF of a book to build the vector database with it before checking a script.
+
+**Returns**
+
+```json
+"status": "ok",
+"message": "Vector store rebuilt."
+```
+
+### Assess Script Endpoint
+
+```
+POST/api/v1/check-scripts
+```
 
 ---
 
