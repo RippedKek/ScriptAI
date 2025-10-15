@@ -1,4 +1,5 @@
 import re
+import textwrap
 from rich.console import Console
 from rich.table import Table
 from rag_retriever import retrieve_context
@@ -8,6 +9,9 @@ import spacy
 
 console = Console()
 nlp = spacy.load("en_core_web_sm")
+
+# Optional toggle to print the full prompt sent to the model
+DEBUG_PROMPT = True
 
 
 def extract_answers(text):
@@ -66,12 +70,28 @@ def evaluate_text(student_text, reference_text):
         #  Reference-based Retrieval: using only teacher's correct answer
         context_hits = retrieve_context(ref, top_k=4)
 
+        #  DEBUG PRINT — showing retrieved chunks and metadata
+        console.print(f"\n[bold cyan]→ Retrieved Context for Question {qid.upper()}:[/bold cyan]")
+        for i, hit in enumerate(context_hits, start=1):
+            console.print(f"[yellow]Chunk {i}[/yellow]  |  [green]{hit['source']}[/green]")
+            console.print(textwrap.fill(hit["text"].strip(), width=100))
+            console.print("-" * 120)
+
         # Combining all retrieved textbook text chunks
         context_text = "\n".join([hit["text"] for hit in context_hits])
 
         # Collecting source info (e.g., "book.pdf - page 12")
         sources = [hit["source"] for hit in context_hits]
         source_pages = "; ".join(sources)
+
+        
+        if DEBUG_PROMPT:
+            console.print(f"\n[bold blue]→ Full Prompt Sent to Model ({qid.upper()}):[/bold blue]")
+            console.print(textwrap.fill(
+                f"Question: Question {qid}\nReference: {ref}\nContext: {context_text}\nStudent Answer: {ans}",
+                width=100
+            ))
+            console.print("-" * 120)
 
         #  Grading using Prometheus/Gemini
         score, feedback = grade(
@@ -81,10 +101,10 @@ def evaluate_text(student_text, reference_text):
             context=context_text
         )
 
-        # Add to console table
+        
         table.add_row(qid.upper(), str(score), feedback[:60], source_pages)
 
-        # Store results
+        # results
         marks[qid] = {
             "score": score,
             "feedback": feedback,
