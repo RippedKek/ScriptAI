@@ -11,6 +11,8 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+import json
 
 # ---- Domain imports from your project ----
 from assessment_core_prometheus import evaluate_text
@@ -30,6 +32,13 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 INDEX_FILE = os.path.join(DATA_DIR, "faiss.index")
 META_FILE  = os.path.join(DATA_DIR, "index.pkl")
+def load_pdf_info():
+    pdf_info = ""
+    if os.path.exists("pdf_info.txt"):
+        with open("pdf_info.txt", "r") as f:
+            pdf_info = f.read().strip()
+        f.close()
+    return pdf_info
 
 # ------------- FastAPI app -------------
 app = FastAPI(title="OCR-Based Student Assessment API", version="1.0.0")
@@ -168,6 +177,17 @@ def _build_index_from_pdf(pdf_bytes: bytes, chunk_size: int = 800) -> Dict[str, 
 def health():
     return Health()
 
+@app.get("/api/v1/pdf-info")
+def pdf_info():
+    """
+    Returns info about the currently loaded PDF (if any).
+    """
+    pdf_name = load_pdf_info()
+    if pdf_name:
+        return {"status": "ok", "book": pdf_name}
+    else:
+        return {"status": "no_pdf", "book": ""}
+
 @app.post("/api/v1/upload-pdf")
 async def upload_pdf(pdf: UploadFile = File(...)):
     """
@@ -176,9 +196,13 @@ async def upload_pdf(pdf: UploadFile = File(...)):
     """
     if not pdf.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are accepted.")
+    pdf_name = pdf.filename.split(".")[0]
+    with open("pdf_info.txt", "w") as f:
+        f.write(pdf_name)
+    f.close()
     pdf_bytes = await pdf.read()
     info = _build_index_from_pdf(pdf_bytes)
-    return JSONResponse({"status": "ok", "message": "Vector store rebuilt.", **info})
+    return JSONResponse({"status": "ok", "message": "Vector store rebuilt.", "book": pdf_name, **info})
 
 @app.post("/api/v1/check-scripts")
 async def check_scripts(
@@ -234,7 +258,6 @@ async def check_scripts(
                     "assessment": assessment_json
                 })
 
-        # ---- 3) ANSWERS → OCR -> format_answer -> evaluate_text ----
         answer_pages = [p for p in all_imgs if _classify_path(p) == "answer"]
         answer_pages.sort(key=lambda x: x.name.lower())
 
@@ -255,7 +278,6 @@ async def check_scripts(
         # Grade with the rubric (reference answers string with delimiters)
         marks = evaluate_text(student_text, rubric_answer)
 
-        # ---- Build final response ----
         pages_count = len(all_imgs)
         return JSONResponse({
             "status": "ok",
@@ -267,3 +289,95 @@ async def check_scripts(
 
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
+        
+@app.post("/api/v1/check-scripts-stream")
+async def check_scripts_stream(
+    zipfile_in: UploadFile = File(...),
+    rubric_answer: str = Form(...)
+):
+    from fastapi.responses import StreamingResponse
+    import json, cv2, os
+
+    def _event(data: dict, event: str = "message"):
+        return f"event: {event}\ndata: {json.dumps(data)}\n\n"
+
+    def work():
+        tmpdir = _extract_zip_to_tmp(zipfile_in)
+        try:
+            if _ocr is None:
+                yield _event({"error": "OCR model not loaded"}, "error")
+                return
+
+            all_imgs = _gather_images(tmpdir)
+            if not all_imgs:
+                yield _event({"error": "No images found in ZIP"}, "error")
+                return
+
+            title_pages  = [p for p in all_imgs if _classify_path(p) == "title"]
+            figure_pages = [p for p in all_imgs if _classify_path(p) == "figure"]
+            answer_pages = [p for p in all_imgs if _classify_path(p) == "answer"]
+            answer_pages.sort(key=lambda x: x.name.lower())
+
+            # let client know totals
+            yield _event({"phase": "start", "answer_total": len(answer_pages), "figure_total": len(figure_pages)}, "meta")
+
+            student_info = ""
+            if title_pages:
+                student_info = _ocr.extract_student_info(str(title_pages[0]))
+
+            figures_payload = []
+            if figure_pages:
+                figures_output_dir = os.path.join(tmpdir, "figures_crops")
+                os.makedirs(figures_output_dir, exist_ok=True)
+
+                for i, fig_page in enumerate(figure_pages, 1):
+                    yield _event({"phase": "figures", "processed": i, "total": len(figure_pages), "file": fig_page.name}, "progress")
+
+                    img = cv2.imread(str(fig_page))
+                    if img is None:
+                        continue
+
+                    base_out = os.path.join(figures_output_dir, fig_page.stem)
+                    crop_paths = process_figure(img, base_out)  # list of saved crop image paths
+
+                    # assess each crop
+                    for cp in crop_paths:
+                        try:
+                            assessment_json = _ocr.assess_figure(cp)  # returns JSON string
+                        except Exception as e:
+                            assessment_json = json.dumps({"error": f"figure assessment failed: {e}"})
+
+                        figures_payload.append({
+                            "image_b64": _b64_of_image(cp),
+                            "assessment": assessment_json
+                        })
+
+            answer_chunks = []
+            for i, ap in enumerate(answer_pages, 1):
+                txt = _ocr.extract_all(str(ap))
+                answer_chunks.append(txt)
+                yield _event({"phase": "answers", "processed": i, "total": len(answer_pages), "file": ap.name}, "progress")
+
+            raw_student_text = "\n\n".join([t for t in answer_chunks if t]).strip()
+            student_text = format_answer(raw_student_text)
+            marks = evaluate_text(student_text, rubric_answer)
+
+            result = {
+                "status": "ok",
+                "pages_ocrd": len(all_imgs),
+                "student_info": student_info,
+                "marks": marks,
+                "figures": figures_payload,   
+            }
+            yield _event(result, "result")
+            yield _event({"done": True}, "end")
+
+        finally:
+            shutil.rmtree(tmpdir, ignore_errors=True)
+
+    headers = {
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+    }
+    return StreamingResponse(work(), headers=headers, media_type="text/event-stream")
