@@ -54,6 +54,14 @@ Return the output in the following JSON format:
 Target: 
 """
 
+PROMPT_FIGURE_EXIST = """
+Check if any figure is present in this image.
+If a figure is present, return "Yes", otherwise return "No".
+If a figure is not present, you will only see a blank white image.
+A bounding box may be present around the image. This is not part of the figure.
+Return only "Yes" or "No".
+"""
+
 # File settings
 DEFAULT_OUTPUT_FILE = "extracted_text.txt"
 DEFAULT_BATCH_OUTPUT = "batch_results.txt"

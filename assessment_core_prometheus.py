@@ -32,7 +32,7 @@ def extract_answers(text):
     return results
 
 
-def evaluate_text(student_text, reference_text):
+def evaluate_text(student_text, reference_text, source_name):
     """
     Compare student OCR text against teacher reference answers.
     Returns dict: {question_id: {"score": int, "feedback": str, "sources": str}}
@@ -82,7 +82,23 @@ def evaluate_text(student_text, reference_text):
 
         # Collecting source info (e.g., "book.pdf - page 12")
         sources = [hit["source"] for hit in context_hits]
+
+        # If a source_name override is provided, replace only the filename
+        # portion (e.g., 'X.pdf') while preserving any suffix like ' - page 12'
+        new_sources = []
+        for src in sources:
+            # Split on the first ' - ' to separate filename from the rest
+            if " - " in src:
+                _filename, suffix = src.split(" - ", 1)
+                new_sources.append(f"{source_name} - {suffix}")
+            else:
+                # If no suffix, just use the provided source_name
+                new_sources.append(source_name)
+        sources = new_sources
+
+        # Join final sources into a single string for display
         source_pages = "; ".join(sources)
+        print(source_pages)
 
         
         if DEBUG_PROMPT:

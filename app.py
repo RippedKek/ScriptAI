@@ -5,6 +5,7 @@ import tempfile
 import shutil
 import base64
 import cv2
+import json
 from typing import List, Dict, Any
 from pathlib import Path
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
@@ -12,7 +13,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-import json
+from PIL import Image
 
 # ---- Domain imports from your project ----
 from assessment_core_prometheus import evaluate_text
@@ -21,6 +22,7 @@ from model_loader import load_model
 from ocr_engine import OCREngine
 from format_answer import format_answer
 from figure_processor import process_figure
+from gemini_figure_processor import assess_figure_gemini, clean_json_output
 
 # ---- RAG index utilities (inline, adapted from build_vector_store.py) ----
 import fitz
@@ -32,18 +34,11 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 os.makedirs(DATA_DIR, exist_ok=True)
 INDEX_FILE = os.path.join(DATA_DIR, "faiss.index")
 META_FILE  = os.path.join(DATA_DIR, "index.pkl")
-def load_pdf_info():
-    pdf_info = ""
-    if os.path.exists("pdf_info.txt"):
-        with open("pdf_info.txt", "r") as f:
-            pdf_info = f.read().strip()
-        f.close()
-    return pdf_info
 
 # ------------- FastAPI app -------------
 app = FastAPI(title="OCR-Based Student Assessment API", version="1.0.0")
 
-# CORS (adjust as needed)
+# CORS 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -68,6 +63,27 @@ class Health(BaseModel):
 def _b64_of_image(path: str) -> str:
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode("ascii")
+    
+def load_pdf_info():
+    pdf_info = ""
+    if os.path.exists("pdf_info.txt"):
+        with open("pdf_info.txt", "r") as f:
+            pdf_info = f.read().strip()
+        f.close()
+    return pdf_info
+
+def _ensure_json_string(obj):
+    """
+    Ensure the returned object is a JSON string. If already a string, return as-is.
+    If it's a dict/list, dump it to JSON. If something else, stringify.
+    """
+    if isinstance(obj, str):
+        return obj
+    try:
+        return json.dumps(obj, ensure_ascii=False)
+    except Exception:
+        # fallback to str()
+        return json.dumps({"raw": str(obj)}, ensure_ascii=False)
 
 def _classify_path(p: Path) -> str:
     """Return 'title' | 'figure' | 'answer' based on filename."""
@@ -225,14 +241,12 @@ async def check_scripts(
         if not all_imgs:
             raise HTTPException(status_code=400, detail="No images found in ZIP.")
 
-        # ---- 1) TITLE → student info ----
         title_pages = [p for p in all_imgs if _classify_path(p) == "title"]
         student_info = ""
         if title_pages:
             # If multiple possible title pages, take the first
             student_info = _ocr.extract_student_info(str(title_pages[0]))
 
-        # ---- 2) FIGURES → crop + assess ----
         figure_pages = [p for p in all_imgs if _classify_path(p) == "figure"]
         figures_payload = []
         figures_output_dir = os.path.join(tmpdir, "figures_crops")
@@ -249,14 +263,32 @@ async def check_scripts(
             # assess each cropped figure with the VLM's figure prompt
             for cp in crop_paths:
                 try:
-                    assessment_json = _ocr.assess_figure(cp)  # returns JSON string per your ocr_engine.py
-                except Exception as e:
-                    assessment_json = f'{{"error": "figure assessment failed: {e}"}}'
+                    # Step 1: Check if figure actually exists
+                    does_figure_exist = _ocr.assess_figure(cp)
+                    print(f"Figure existence check: {does_figure_exist} for {cp}")
 
-                figures_payload.append({
-                    "image_b64": _b64_of_image(cp),
-                    "assessment": assessment_json
-                })
+                    # Step 2: If figure exists, run Gemini assessment
+                    if does_figure_exist.strip().lower() == "yes":
+                        raw_output = assess_figure_gemini(Image.open(cp), "What is a scaphoid fracture?")
+                        
+                        # Step 3: Clean Gemini’s JSON output
+                        if isinstance(raw_output, str):
+                            try:
+                                assessment_json = clean_json_output(raw_output)
+                            except Exception as e:
+                                assessment_json = {"error": f"Invalid JSON: {e}", "raw": raw_output}
+                        else:
+                            assessment_json = raw_output
+                        
+                        figures_payload.append({
+                            "image_b64": _b64_of_image(cp),
+                            "assessment": _ensure_json_string(assessment_json)
+                        })
+                    else:
+                        assessment_json = {"note": "No figure detected."}
+
+                except Exception as e:
+                    assessment_json = {"error": f"Figure assessment failed: {e}"}
 
         answer_pages = [p for p in all_imgs if _classify_path(p) == "answer"]
         answer_pages.sort(key=lambda x: x.name.lower())
@@ -268,15 +300,14 @@ async def check_scripts(
 
         raw_student_text = "\n\n".join([t for t in answer_chunks if t]).strip()
 
-        # Your format_answer module (as you wrote it) takes just the text
-        # and re-inserts missing delimiters using Gemini; keep it as-is:
         student_text = format_answer(raw_student_text)
 
         print("OCR Completed. Final answer:")
         print(student_text)
 
         # Grade with the rubric (reference answers string with delimiters)
-        marks = evaluate_text(student_text, rubric_answer)
+        pdf_name = load_pdf_info()
+        marks = evaluate_text(student_text, rubric_answer, pdf_name)
 
         pages_count = len(all_imgs)
         return JSONResponse({
@@ -343,14 +374,32 @@ async def check_scripts_stream(
                     # assess each crop
                     for cp in crop_paths:
                         try:
-                            assessment_json = _ocr.assess_figure(cp)  # returns JSON string
-                        except Exception as e:
-                            assessment_json = json.dumps({"error": f"figure assessment failed: {e}"})
+                            # Step 1: Check if figure actually exists
+                            does_figure_exist = _ocr.assess_figure(cp)
+                            print(f"Figure existence check: {does_figure_exist} for {cp}")
 
-                        figures_payload.append({
-                            "image_b64": _b64_of_image(cp),
-                            "assessment": assessment_json
-                        })
+                            # Step 2: If figure exists, run Gemini assessment
+                            if does_figure_exist.strip().lower() == "yes":
+                                raw_output = assess_figure_gemini(Image.open(cp), "What is a scaphoid fracture?")
+                                
+                                # Step 3: Clean Gemini’s JSON output
+                                if isinstance(raw_output, str):
+                                    try:
+                                        assessment_json = clean_json_output(raw_output)
+                                    except Exception as e:
+                                        assessment_json = {"error": f"Invalid JSON: {e}", "raw": raw_output}
+                                else:
+                                    assessment_json = raw_output
+                                    
+                                figures_payload.append({
+                                    "image_b64": _b64_of_image(cp),
+                                    "assessment": _ensure_json_string(assessment_json)
+                                })
+                            else:
+                                assessment_json = {"note": "No figure detected."}
+
+                        except Exception as e:
+                            assessment_json = {"error": f"Figure assessment failed: {e}"}
 
             answer_chunks = []
             for i, ap in enumerate(answer_pages, 1):
@@ -360,7 +409,8 @@ async def check_scripts_stream(
 
             raw_student_text = "\n\n".join([t for t in answer_chunks if t]).strip()
             student_text = format_answer(raw_student_text)
-            marks = evaluate_text(student_text, rubric_answer)
+            pdf_name = load_pdf_info()
+            marks = evaluate_text(student_text, rubric_answer, pdf_name)
 
             result = {
                 "status": "ok",

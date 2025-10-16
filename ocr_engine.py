@@ -9,7 +9,8 @@ from config import (
     PROMPT_EXTRACT_ALL,
     PROMPT_STUDENT_INFO,
     PROMPT_STRUCTURED,
-    PROMPT_FIGURE
+    PROMPT_FIGURE,
+    PROMPT_FIGURE_EXIST
 )
 
 
@@ -129,7 +130,7 @@ class OCREngine:
             max_tokens=DEFAULT_MAX_TOKENS
         )
         
-    def assess_figure(self, image_path, target='', custom_prompt=None, max_tokens=None):
+    def assess_figure(self, image_path, custom_prompt=None, max_tokens=None):
         """
         Assess the figure from image
 
@@ -151,7 +152,7 @@ class OCREngine:
 
         # Use default figure prompt if none provided
         if custom_prompt is None:
-            custom_prompt = PROMPT_FIGURE + target
+            custom_prompt = PROMPT_FIGURE_EXIST
 
         if max_tokens is None:
             max_tokens = DEFAULT_MAX_TOKENS
