@@ -7,7 +7,6 @@ import textwrap
 from tqdm import tqdm
 from sentence_transformers import SentenceTransformer
 from langchain_experimental.text_splitter import SemanticChunker
-from langchain.embeddings import HuggingFaceEmbeddings
 
 
 
@@ -45,10 +44,13 @@ print(f"[INFO] Extracted {len(pages)} non-empty pages.")
 
 
 
-print("[STEP] Performing semantic chunking using embeddings...")
+print("[STEP] Performing semantic chunking using unified embeddings...")
 
-embed_model_lc = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
-chunker = SemanticChunker(embed_model_lc, breakpoint_threshold_type="percentile")
+chunker = SemanticChunker(
+    embedder,
+    breakpoint_threshold_type="percentile",
+    breakpoint_threshold_amount=0.90  # less aggressive splitting (better context)
+)
 
 documents, metadata = [], []
 
@@ -62,12 +64,24 @@ for page_num, text in tqdm(pages, desc="[CHUNKING PAGES]"):
     except Exception as e:
         print(f"[WARN] Skipped page {page_num} due to error: {e}")
 
-print(f"[INFO] ✅ Created {len(documents)} semantic chunks.")
+print(f"[INFO] Raw semantic chunks created: {len(documents)}")
 
 
-# ==============================================================
-# 🔢 EMBEDDINGS + FAISS INDEX
-# ==============================================================
+
+before_filter = len(documents)
+filtered_docs, filtered_meta = [], []
+for d, m in zip(documents, metadata):
+    txt = d.strip().lower()
+    if len(txt.split()) > 15 and not txt.startswith("fig"):
+        filtered_docs.append(d)
+        filtered_meta.append(m)
+
+documents, metadata = filtered_docs, filtered_meta
+print(f"[INFO] Filtered out {before_filter - len(documents)} trivial chunks.")
+print(f"[INFO] ✅ Final semantic chunks: {len(documents)}")
+
+
+
 print("[STEP] Generating embeddings for all chunks...")
 embeddings = embedder.encode(
     documents,
@@ -89,9 +103,7 @@ print(f"   → {INDEX_FILE}")
 print(f"   → {META_FILE}")
 
 
-# ==============================================================
-# 👀 SAMPLE OUTPUT
-# ==============================================================
+
 print("\n========== SAMPLE SEMANTIC CHUNKS ==========\n")
 for i in range(min(5, len(documents))):
     print(f"ID: {i} | {metadata[i]}")
