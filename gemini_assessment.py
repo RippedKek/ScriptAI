@@ -11,7 +11,8 @@ if not API_KEY:
 
 genai.configure(api_key=API_KEY)
 MODEL_NAME = "gemini-2.5-flash-lite"
-EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+# EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+EMBED_MODEL = "BAAI/bge-base-en-v1.5"
 
 embedder = SentenceTransformer(EMBED_MODEL)
 
