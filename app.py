@@ -15,7 +15,7 @@ from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from PIL import Image
 
-# ---- Domain imports from your project ----
+# ---- Domain imports from project ----
 from assessment_core_prometheus import evaluate_text
 from gemini_assessment import grade  
 from model_loader import load_model
@@ -52,7 +52,6 @@ try:
     _model, _processor, _device = load_model()
     _ocr = OCREngine(_model, _processor, _device)
 except Exception as e:
-    # You can still use the /upload-pdf endpoint without OCR
     _ocr = None
 
 # ---------- Models ----------
@@ -424,6 +423,156 @@ async def check_scripts_stream(
 
         finally:
             shutil.rmtree(tmpdir, ignore_errors=True)
+
+    headers = {
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+    }
+    return StreamingResponse(work(), headers=headers, media_type="text/event-stream")
+
+@app.post("/api/v1/batch-check-scripts-stream")
+async def batch_check_scripts_stream(
+    parent_zip: UploadFile = File(...),
+    rubric_answer: str = Form(...)
+):
+    """
+    Accepts a 'parent' ZIP where each top-level subfolder is a student_id that contains
+    that student's scanned pages (images). For each student folder, we:
+      - extract title → student_info
+      - process figures → crops + assess
+      - OCR answers → format_answer → evaluate_text
+    Streams progress with SSE and finishes with a final 'result' event that includes all students.
+    
+    NEW: Also returns answer_pages (base64 images) and extracted_text for each student.
+    """
+
+    def _event(data: dict, event: str = "message"):
+        return f"event: {event}\ndata: {json.dumps(data)}\n\n"
+
+    def _process_one_student(student_dir: Path):
+        """Return the same shape as /api/v1/check-scripts for a single student folder."""
+        # Collect pages from this folder only (stable order)
+        all_imgs = []
+        for r, _, files in os.walk(student_dir):
+            for fn in files:
+                fp = os.path.join(r, fn)
+                name_l = fp.lower()
+                if name_l.endswith((".png", ".jpg", ".jpeg", ".webp", ".bmp", ".tif", ".tiff")):
+                    all_imgs.append(Path(fp))
+        all_imgs.sort(key=lambda p: p.name.lower())
+
+        title_pages  = [p for p in all_imgs if _classify_path(p) == "title"]
+        figure_pages = [p for p in all_imgs if _classify_path(p) == "figure"]
+        answer_pages = [p for p in all_imgs if _classify_path(p) == "answer"]
+        answer_pages.sort(key=lambda x: x.name.lower())
+
+        # 1) Title → student info
+        student_info = ""
+        if title_pages:
+            student_info = _ocr.extract_student_info(str(title_pages[0]))
+
+        # 2) Figures → crop + assess
+        figures_payload = []
+        if figure_pages:
+            figures_output_dir = os.path.join(student_dir, "_figures_crops")
+            os.makedirs(figures_output_dir, exist_ok=True)
+            for fig_page in figure_pages:
+                img = cv2.imread(str(fig_page))
+                if img is None:
+                    continue
+                base_out = os.path.join(figures_output_dir, fig_page.stem)
+                crop_paths = process_figure(img, base_out)
+                for cp in crop_paths:
+                    try:
+                        does_figure_exist = _ocr.assess_figure(cp)
+                        print(f"Figure existence check: {does_figure_exist} for {cp}")
+
+                        if does_figure_exist.strip().lower() == "yes":
+                            raw_output = assess_figure_gemini(Image.open(cp), "What is a scaphoid fracture?")
+                            
+                            if isinstance(raw_output, str):
+                                try:
+                                    assessment_json = clean_json_output(raw_output)
+                                except Exception as e:
+                                    assessment_json = {"error": f"Invalid JSON: {e}", "raw": raw_output}
+                            else:
+                                assessment_json = raw_output
+                                
+                            figures_payload.append({
+                                "image_b64": _b64_of_image(cp),
+                                "assessment": _ensure_json_string(assessment_json)
+                            })
+                        else:
+                            assessment_json = {"note": "No figure detected."}
+
+                    except Exception as e:
+                        assessment_json = {"error": f"Figure assessment failed: {e}"}
+
+        # 3) Answers → OCR -> format_answer -> evaluate_text
+        answer_chunks = []
+        answer_pages_b64 = []  # NEW: Collect base64 images of answer pages
+        
+        for ap in answer_pages:
+            # OCR the text
+            answer_chunks.append(_ocr.extract_all(str(ap)))
+            # Convert to base64
+            answer_pages_b64.append(_b64_of_image(str(ap)))
+        
+        raw_student_text = "\n\n".join([t for t in answer_chunks if t]).strip()
+        student_text = format_answer(raw_student_text)  # NEW: This is the extracted text we'll send
+        
+        pdf_name = load_pdf_info()
+        marks = evaluate_text(student_text, rubric_answer, pdf_name)
+
+        return {
+            "status": "ok",
+            "pages_ocrd": len(all_imgs),
+            "student_info": student_info,
+            "marks": marks,
+            "figures": figures_payload,
+            "answer_pages": answer_pages_b64,  # NEW: Array of base64 answer page images
+            "extracted_text": student_text      # NEW: The formatted OCR text
+        }
+
+    def work():
+        # Re-use your existing ZIP extraction
+        tmp_root = _extract_zip_to_tmp(parent_zip)
+        try:
+            if _ocr is None:
+                yield _event({"error": "OCR model not loaded on server."}, "error")
+                return
+
+            # Find direct subfolders (student ids)
+            root = Path(tmp_root)
+            student_dirs = [p for p in root.iterdir() if p.is_dir()]
+            student_dirs.sort(key=lambda p: p.name.lower())
+
+            yield _event({"phase": "start", "students_total": len(student_dirs)}, "meta")
+
+            batch_results = {}  # { student_id: single_result }
+            for idx, sdir in enumerate(student_dirs, 1):
+                student_id = sdir.name
+
+                # announce which student we're on
+                yield _event({"phase": "student_start", "student_id": student_id, "index": idx, "total": len(student_dirs)}, "progress")
+
+                try:
+                    result = _process_one_student(sdir)
+                    batch_results[student_id] = result
+                    # progress tick per student
+                    yield _event({"phase": "student_done", "student_id": student_id, "index": idx, "total": len(student_dirs)}, "progress")
+                except Exception as e:
+                    # collect failure but keep going
+                    batch_results[student_id] = {"status": "error", "detail": str(e)}
+                    yield _event({"phase": "student_error", "student_id": student_id, "error": str(e), "index": idx, "total": len(student_dirs)}, "progress")
+
+            # Final combined result
+            yield _event({"status": "ok", "students": batch_results}, "result")
+            yield _event({"done": True}, "end")
+
+        finally:
+            shutil.rmtree(tmp_root, ignore_errors=True)
 
     headers = {
         "Cache-Control": "no-cache",
