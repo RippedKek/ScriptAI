@@ -10,7 +10,8 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 INDEX_PATH = os.path.join(DATA_DIR, "faiss.index")
 META_PATH  = os.path.join(DATA_DIR, "index.pkl")
 
-EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+# EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2" 
+EMBED_MODEL = "BAAI/bge-base-en-v1.5"
 TOP_K = 5
 
 

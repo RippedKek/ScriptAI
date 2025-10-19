@@ -4,7 +4,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 from sentence_transformers import SentenceTransformer, util
 
 PROMPT_MODEL = "prometheus-eval/prometheus-7b-v2.0"
-EMBED_MODEL  = "sentence-transformers/all-MiniLM-L6-v2"
+# EMBED_MODEL  = "sentence-transformers/all-MiniLM-L6-v2"
+EMBED_MODEL = "BAAI/bge-base-en-v1.5"
 
 _tok = None
 _model = None
