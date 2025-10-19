@@ -1,121 +1,131 @@
 # OCR-Based Student Assessment System
 
-## Overview
+## 🧠 Overview
 
-The **OCR-Based Student Assessment System** is a complete automated framework for evaluating handwritten exam scripts using **vision-language models (VLMs)** and **NLP-based semantic grading**. It performs OCR, figure analysis, and intelligent grading by comparing responses to reference answers using similarity metrics or API-based assessment. The system is modular, GPU-optimized, and scalable for institutional use.
-
-**Update 15-10-2025: This codebase can now be used as a backend server**
+The **OCR-Based Student Assessment System** automates the evaluation of handwritten exam scripts using **Vision-Language Models (VLMs)**, **Gemini-based assessment**, and **Retrieval-Augmented Generation (RAG)**.  
+It performs OCR, text evaluation, and figure analysis — providing a complete AI-based grading pipeline suitable for academic institutions.
 
 ---
 
-## Key Features
+## 🚀 Key Features
 
-### 1. OCR Extraction
+### 1. OCR Extraction (Text and Metadata)
 
-- Uses **Qwen2-VL-2B-Instruct**, a multimodal vision-language model for reading handwritten text directly from scanned exam pages.
-- Detects structured question boundaries like:
-  - `Answer to the question no-1a`
-  - `End of Answer-1a`
-- Extracts student metadata (Name, ID, Course, etc.) from title pages.
+- Uses **Qwen2-VL-2B-Instruct**, a vision-language model, to directly interpret handwritten text.
+- Extracts student information (Name, ID, Course, etc.) from title pages.
+- Detects question boundaries using standard markers such as:
+  ```
+  Answer to the question no-1a
+  End of Answer-1a
+  ```
 
-### 2. Figure Extraction and Assessment
+### 2. Figure Segmentation and Evaluation
 
-- Uses **OpenCV** contour detection to isolate figures.
-- Each extracted figure is analyzed using the Qwen2-VL model.
-- Outputs structured JSON results such as:
+- Automatically detects and crops diagrams from scanned answer pages using **OpenCV**.
+- Each extracted figure is evaluated using the **Qwen2-VL** and **Gemini** models.
+- Outputs a structured JSON like:
   ```json
   {
     "figure_number": "1a",
     "target": "heart",
     "caption": "Labeled diagram of human heart",
-    "marks": 90
+    "marks": 92
   }
   ```
 
-### 3. Text Assessment
+### 3. Textual Assessment
 
-- Textual answers are compared with reference solutions using:
-  - **Sentence-transformer** embeddings (`all-mpnet-base-v2`).
-  - **TF-IDF keyword overlap** for topic relevance.
-  - **Length factor** for proportional completeness.
-- Grading pipelines:
-  - **Gemini API (default):** Lightweight cloud-based evaluation.
-  - **Prometheus RAG Pipeline (optional):** Retrieval-Augmented Generation model using FAISS; disabled by default due to hardware requirements.
+- Evaluates student answers using semantic similarity and keyword matching.
+- Combines three factors:
+  - **Semantic Similarity** (SentenceTransformer embeddings)
+  - **Keyword Overlap** (TF-IDF weighting)
+  - **Length Factor** (relative completeness)
+- Two scoring pipelines available:
+  - **Gemini 2.5 Flash (default)** — API-based evaluation.
+  - **Prometheus RAG pipeline** — local grading using textbook retrieval.
 
 ### 4. Batch Processing
 
-- Accepts ZIP files of scanned scripts (single or multi-student).
-- Automatically identifies:
-  - Title page → metadata extraction
-  - Answer pages → text assessment
-  - Figure pages → diagram analysis
-- Merges all OCR text into structured files for grading.
+- Accepts single or multi-student `.zip` archives.
+- Automatically categorizes:
+  - **title** → student info extraction
+  - **figure** → figure segmentation + assessment
+  - **answer** → full OCR + grading
+- Merges all text into structured `.txt` files for downstream grading.
 
 ### 5. RAG Integration (Optional)
 
-- **scripts/build_vector_database.py** builds a **FAISS vector index** from textbook PDFs for context-aware grading.
-- **rag_retriever.py** retrieves semantically relevant context chunks for use in Prometheus or Gemini assessments.
+- Builds **FAISS** vector store from textbooks or PDFs for contextual grading.
+- Enables Prometheus to access relevant content during evaluation.
 
-### 6. Database Integration
+### 6. Backend API (FastAPI)
 
-- Extracted student information and marks are appended to:
-  - `results/students.csv`
-  - `results/marks.csv`
-
-### 7. Backend Support
-
-- The backend runs on _fastAPI_. The code can be found in `app.py`
+- Provides RESTful endpoints for OCR, grading, and vector store management.
+- Includes real-time **streaming endpoints** for batch script checking.
+- Can run locally or deployed as a microservice.
 
 ---
 
-## System Workflow
+## ⚙️ Architecture Summary
 
-1. **Model Loading** → `model_loader.py` initializes Qwen2-VL with GPU or 4-bit quantization.
-2. **OCR & Figure Extraction** → `ocr_engine.py` handles text and diagram extraction.
-3. **Figure Processing** → `figure_processor.py` segments diagrams via OpenCV.
-4. **Text Assessment** → `assessment_core.py` and `assessment_core_prometheus.py` compute grades.
-5. **Batch Processing** → `batch_processor.py` manages single or multi-student ZIP archives.
-6. **Main Entry** → `main.py` integrates the full pipeline.
-7. **RAG Context Building** → `scripts/build_vector_database.py` builds the vector database for Prometheus.
+| Component                           | Purpose                                                   |
+| ----------------------------------- | --------------------------------------------------------- |
+| `model_loader.py`                   | Loads Qwen2-VL model (supports GPU and quantization).     |
+| `ocr_engine.py`                     | Extracts text and figures from scanned images.            |
+| `figure_processor.py`               | Segments figures using OpenCV contour detection.          |
+| `gemini_assessment.py`              | Grades answers with Gemini 2.5 Flash API.                 |
+| `gemini_figure_processor.py`        | Grades figures via Gemini multimodal reasoning.           |
+| `assessment_core.py`                | Local semantic evaluation pipeline.                       |
+| `assessment_core_prometheus.py`     | RAG-enhanced Prometheus-based assessment.                 |
+| `rag_retriever.py`                  | Retrieves semantically relevant content from FAISS index. |
+| `build_vector_store.py`             | Builds FAISS index from textbook PDFs.                    |
+| `semantic_chunking_vector_store.py` | Alternative semantic chunking index builder.              |
+| `batch_processor.py`                | Handles ZIP batch processing of multiple scripts.         |
+| `database.py`                       | Writes extracted student info and marks to CSV.           |
+| `app.py`                            | FastAPI backend server for API usage.                     |
+| `config.py`                         | Stores configuration and prompt templates.                |
 
 ---
 
-## Directory Structure
+## 📂 Directory Structure
 
 ```
 project_root/
-│
-├── app.py                     # FastAPI server
-├── batch_processor.py         # Multi-student ZIP handler
-├── ocr_engine.py              # OCR + figure evaluation
-├── assessment_core.py         # Local semantic text assessment
-├── assessment_core_prometheus.py # RAG-enhanced Prometheus pipeline (optional)
-├── gemini_assessment.py       # Gemini API-based grading (default)
-├── figure_processor.py        # OpenCV figure segmentation
-├── model_loader.py            # Model loader with GPU/quantization
-├── database.py                # CSV database appender
-├── main.py                    # CLI entrypoint
-├── config.py                  # Configurations & prompts
-├── utils.py                   # Utility and formatting helpers
-├── rag_retriever.py           # Context retriever using FAISS index
-├── scripts/
-│   └── build_vector_database.py  # Builds FAISS index from textbooks
-├── requirements.txt           # Dependencies
-└── output/
-    ├── text/<student_id>/answers_combined.txt
-    ├── figures/layout/<student_id>/
-    └── figures/assessments/<student_id>/
+├── app.py
+├── batch_processor.py
+├── ocr_engine.py
+├── assessment_core.py
+├── assessment_core_prometheus.py
+├── gemini_assessment.py
+├── gemini_figure_processor.py
+├── figure_processor.py
+├── model_loader.py
+├── database.py
+├── config.py
+├── rag_retriever.py
+├── semantic_chunking_vector_store.py
+├── build_vector_store.py
+├── format_answer.py
+├── utils.py
+├── main.py
+├── output/
+│   ├── text/
+│   ├── figures/
+│   └── assessments/
+└── results/
+    ├── students.csv
+    └── marks.csv
 ```
 
 ---
 
-## Installation
+## 🧩 Installation
 
-### Prerequisites
+### Requirements
 
-- Python 3.9+
-- CUDA-enabled GPU (recommended)
-- ≥8 GB VRAM for full model precision or 4 GB with quantization
+- Python 3.9 or higher
+- CUDA GPU (optional but recommended)
+- Minimum 8 GB VRAM (4 GB possible with quantization)
 
 ### Setup
 
@@ -123,12 +133,12 @@ project_root/
 git clone <repo_url>
 cd OCR-Based-Student-Assessment-System
 python -m venv venv
-source venv/bin/activate    # Linux/macOS
-venv\Scripts\activate     # Windows
+source venv/bin/activate        # Linux/macOS
+venv\Scripts\activate         # Windows
 pip install -r requirements.txt
 ```
 
-### Verify CUDA
+### Check CUDA Availability
 
 ```bash
 python cuda.py
@@ -136,9 +146,9 @@ python cuda.py
 
 ---
 
-## Usage
+## 🧠 Usage (CLI)
 
-### Single Student Script
+### Single Student ZIP
 
 ```bash
 python main.py /path/to/student_script.zip
@@ -150,126 +160,115 @@ python main.py /path/to/student_script.zip
 python main.py --multi parent_batch.zip
 ```
 
-#### Expected ZIP Layout
+#### Example ZIP Structure
 
 ```
 parent_batch/
-├── std_id_1/
+├── student_1/
 │   ├── title.png
 │   ├── figure_1.png
-│   ├── text_1.png
-├── std_id_2/
+│   └── page_1.png
+├── student_2/
 │   ├── title.png
 │   ├── figure_2.png
-│   ├── text_1.png
+│   └── page_1.png
 ```
 
 ---
 
-## Output Files
+## 🖥️ Backend API (FastAPI)
 
-| File Path                               | Description                |
-| --------------------------------------- | -------------------------- |
-| `output/text/{id}/answers_combined.txt` | Combined OCR text          |
-| `output/figures/layout/{id}`            | Cropped figure images      |
-| `output/figures/assessments/{id}`       | Figure JSON results        |
-| `results/students.csv`                  | Extracted student metadata |
-| `results/marks.csv`                     | Computed marks per student |
+### Start Server
 
----
-
-## Backend Usage
-
-To run the backend, simply run this in the terminal
-
-```
+```bash
 uvicorn app:app --host 0.0.0.0 --port 8000
 ```
 
-The models should start loading, and once finished, it will display in the terminal. There are three endpoints for the backend
+### Endpoints
 
-### Health Endpoint
+#### 1. Health Check
 
 ```
-GET/health
+GET /health
 ```
 
-**Returns**
+Response:
 
 ```json
-"status": "ok"
+{ "status": "ok" }
 ```
 
-### Upload PDF Endpoint
+#### 2. Upload PDF (Build Vector Store)
 
 ```
-POST/api/v1/upload-pdf
+POST /api/v1/upload-pdf
 ```
 
-#### Request Body
+Uploads a textbook PDF and rebuilds the FAISS index.
 
-Send non-flattened PDF of a book to build the vector database with it before checking a script.
-
-**Returns**
+Response:
 
 ```json
-"status": "ok",
-"message": "Vector store rebuilt."
+{ "status": "ok", "message": "Vector store rebuilt." }
 ```
 
-### Assess Script Endpoint
+#### 3. Check Single Student Script
 
 ```
-POST/api/v1/check-scripts
+POST /api/v1/check-scripts
+```
+
+Accepts a `.zip` of scanned pages and rubric text, returns structured grading results.
+
+#### 4. Streamed Script Checking (Batch Mode)
+
+```
+POST /api/v1/batch-check-scripts-stream
+```
+
+Processes multi-student ZIP archives with real-time progress events.
+
+---
+
+## 📚 Vector Store Building
+
+Create a semantic knowledge base from textbooks for context-aware evaluation:
+
+```bash
+python build_vector_store.py
+```
+
+or for advanced semantic chunking:
+
+```bash
+python semantic_chunking_vector_store.py
 ```
 
 ---
 
-## Models and Prompts
+## ⚖️ Assessment Pipelines
 
-### Model
-
-- **Name:** `Qwen/Qwen2-VL-2B-Instruct`
-- Supports CPU/GPU execution with 4-bit quantization.
-
-### Prompts (from `config.py`)
-
-- `PROMPT_STUDENT_INFO`: Extract structured student metadata.
-- `PROMPT_EXTRACT_ALL`: Extracts all answers with delimiters.
-- `PROMPT_FIGURE`: Evaluates figure accuracy and assigns marks.
+| Pipeline             | Model                 | Description                                |
+| -------------------- | --------------------- | ------------------------------------------ |
+| **Gemini (Default)** | gemini-2.5-flash-lite | Fast API-based grading                     |
+| **Prometheus RAG**   | Local + FAISS         | Contextual grading with textbook retrieval |
 
 ---
 
-## Gemini vs Prometheus Assessment
+## ⚠️ Limitations
 
-| Feature        | Gemini API (Default)           | Prometheus RAG (Optional)        |
-| -------------- | ------------------------------ | -------------------------------- |
-| Model Type     | Cloud-based (Gemini 2.5 Flash) | Local FAISS + Prometheus LLM     |
-| Hardware       | Works on any system            | Requires high-end GPU            |
-| Contextual RAG | Supported                      | Supported                        |
-| Speed          | Fast (API-driven)              | Slower (LLM inference)           |
-| Accuracy       | High                           | Very High                        |
-| Usage          | Default active                 | Disabled unless manually enabled |
+- OCR accuracy varies with handwriting clarity.
+- Prometheus pipeline requires GPU memory and FAISS index.
+- Gemini API key required via `.env`.
 
 ---
 
-## Limitations
-
-- OCR accuracy depends on handwriting clarity.
-- Prometheus RAG mode requires a high-end GPU.
-- Large batch processing may need extended runtime.
-
----
-
-## License
-
-This project is for **academic and research use only**.  
-Commercial redistribution or resale is prohibited.
-
----
-
-## Authors
+## 👨‍💻 Authors
 
 Developed by **Tanjeeb Meheran Rohan** and **Afra Anika**  
 Department of Computer Science and Engineering  
 **Islamic University of Technology (IUT)**
+
+---
+
+© 2025 — Academic and Research Use Only.
