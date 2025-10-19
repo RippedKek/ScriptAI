@@ -433,8 +433,8 @@ async def check_scripts_stream(
 
 @app.post("/api/v1/batch-check-scripts-stream")
 async def batch_check_scripts_stream(
-    parent_zip: UploadFile = File(...),          # parent ZIP; contains subfolders per student id
-    rubric_answer: str = Form(...)               # same rubric string with delimiters
+    parent_zip: UploadFile = File(...),
+    rubric_answer: str = Form(...)
 ):
     """
     Accepts a 'parent' ZIP where each top-level subfolder is a student_id that contains
@@ -443,6 +443,8 @@ async def batch_check_scripts_stream(
       - process figures → crops + assess
       - OCR answers → format_answer → evaluate_text
     Streams progress with SSE and finishes with a final 'result' event that includes all students.
+    
+    NEW: Also returns answer_pages (base64 images) and extracted_text for each student.
     """
 
     def _event(data: dict, event: str = "message"):
@@ -483,15 +485,12 @@ async def batch_check_scripts_stream(
                 crop_paths = process_figure(img, base_out)
                 for cp in crop_paths:
                     try:
-                        # Step 1: Check if figure actually exists
                         does_figure_exist = _ocr.assess_figure(cp)
                         print(f"Figure existence check: {does_figure_exist} for {cp}")
 
-                        # Step 2: If figure exists, run Gemini assessment
                         if does_figure_exist.strip().lower() == "yes":
                             raw_output = assess_figure_gemini(Image.open(cp), "What is a scaphoid fracture?")
                             
-                            # Step 3: Clean Gemini’s JSON output
                             if isinstance(raw_output, str):
                                 try:
                                     assessment_json = clean_json_output(raw_output)
@@ -512,10 +511,17 @@ async def batch_check_scripts_stream(
 
         # 3) Answers → OCR -> format_answer -> evaluate_text
         answer_chunks = []
+        answer_pages_b64 = []  # NEW: Collect base64 images of answer pages
+        
         for ap in answer_pages:
+            # OCR the text
             answer_chunks.append(_ocr.extract_all(str(ap)))
+            # Convert to base64
+            answer_pages_b64.append(_b64_of_image(str(ap)))
+        
         raw_student_text = "\n\n".join([t for t in answer_chunks if t]).strip()
-        student_text = format_answer(raw_student_text)
+        student_text = format_answer(raw_student_text)  # NEW: This is the extracted text we'll send
+        
         pdf_name = load_pdf_info()
         marks = evaluate_text(student_text, rubric_answer, pdf_name)
 
@@ -524,7 +530,9 @@ async def batch_check_scripts_stream(
             "pages_ocrd": len(all_imgs),
             "student_info": student_info,
             "marks": marks,
-            "figures": figures_payload
+            "figures": figures_payload,
+            "answer_pages": answer_pages_b64,  # NEW: Array of base64 answer page images
+            "extracted_text": student_text      # NEW: The formatted OCR text
         }
 
     def work():
