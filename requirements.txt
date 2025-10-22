@@ -5,3 +5,9 @@ accelerate>=0.25.0
 pillow>=10.0.0
 qwen-vl-utils>=0.0.1
 bitsandbytes>=0.41.0
+sentence-transformers
+pymupdf
+faiss-cpu
+spacy
+opencv-python
+google-generativeai

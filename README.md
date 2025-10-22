@@ -1,13 +1,13 @@
 # OCR-Based Student Assessment System
 
-## 🧠 Overview
+## Overview
 
 The **OCR-Based Student Assessment System** automates the evaluation of handwritten exam scripts using **Vision-Language Models (VLMs)**, **Gemini-based assessment**, and **Retrieval-Augmented Generation (RAG)**.  
 It performs OCR, text evaluation, and figure analysis — providing a complete AI-based grading pipeline suitable for academic institutions.
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 ### 1. OCR Extraction (Text and Metadata)
 
@@ -66,7 +66,7 @@ It performs OCR, text evaluation, and figure analysis — providing a complete A
 
 ---
 
-## ⚙️ Architecture Summary
+## Architecture Summary
 
 | Component                           | Purpose                                                   |
 | ----------------------------------- | --------------------------------------------------------- |
@@ -87,7 +87,7 @@ It performs OCR, text evaluation, and figure analysis — providing a complete A
 
 ---
 
-## 📂 Directory Structure
+## Directory Structure
 
 ```
 project_root/
@@ -119,7 +119,7 @@ project_root/
 
 ---
 
-## 🧩 Installation
+## Installation
 
 ### Requirements
 
@@ -146,7 +146,14 @@ python cuda.py
 
 ---
 
-## 🧠 Usage (CLI)
+## Usage
+
+First clone the frontend from this [repo](https://github.com/RippedKek/easy-script-frontend)
+
+### Environment Variables
+
+You need to create a `.env` file and paste the gemini api key under the name `GEMINI_API_KEY`
+We have created a second api key for figure assessment so the first one does not hit the token limit. It should be placed under the name `GEMINI_FIGURE_API_KEY`
 
 ### Single Student ZIP
 
@@ -176,7 +183,7 @@ parent_batch/
 
 ---
 
-## 🖥️ Backend API (FastAPI)
+## Backend API (FastAPI)
 
 ### Start Server
 
@@ -230,7 +237,7 @@ Processes multi-student ZIP archives with real-time progress events.
 
 ---
 
-## 📚 Vector Store Building
+## Vector Store Building
 
 Create a semantic knowledge base from textbooks for context-aware evaluation:
 
@@ -246,7 +253,7 @@ python semantic_chunking_vector_store.py
 
 ---
 
-## ⚖️ Assessment Pipelines
+## Assessment Pipelines
 
 | Pipeline             | Model                 | Description                                |
 | -------------------- | --------------------- | ------------------------------------------ |
@@ -255,7 +262,7 @@ python semantic_chunking_vector_store.py
 
 ---
 
-## ⚠️ Limitations
+## Limitations
 
 - OCR accuracy varies with handwriting clarity.
 - Prometheus pipeline requires GPU memory and FAISS index.
@@ -263,12 +270,10 @@ python semantic_chunking_vector_store.py
 
 ---
 
-## 👨‍💻 Authors
+## Authors
 
 Developed by **Tanjeeb Meheran Rohan** and **Afra Anika**  
 Department of Computer Science and Engineering  
 **Islamic University of Technology (IUT)**
 
 ---
-
-© 2025 — Academic and Research Use Only.
